@@ -4,7 +4,37 @@ import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { saveGame } from "@/actions/gameActions";
 
-const SAVE_INTERVAL = 30000; // Save every 30 seconds
+const SAVE_INTERVAL = 15000; // Save every 15 seconds (reduced from 30s)
+
+// Helper to get save payload from store state
+function getSavePayload() {
+  const state = useGameStore.getState();
+  return {
+    money: state.money,
+    followers: state.followers,
+    totalEarnings: state.totalEarnings,
+    reputation: state.reputation,
+    resources: state.resources,
+    efficiency: state.efficiency,
+    machineCondition: state.machineCondition,
+    buildings: state.buildings,
+    lastProductionPerSecond: state.moneyPerSecond, // Snapshot for offline earnings
+    // Finance fields
+    aum: state.aum,
+    creditRating: state.creditRating,
+    leverage: state.leverage,
+    marketPhase: state.marketPhase,
+    crashesSurvived: state.crashesSurvived,
+    hedgingEnabled: state.hedgingEnabled,
+    // Contract fields
+    activeContracts: state.activeContracts,
+    autoAcceptContracts: state.autoAcceptContracts,
+    autoAcceptMinReward: state.autoAcceptMinReward,
+    completedContractsCount: state.completedContractsCount,
+    completedLongTermCount: state.completedLongTermCount,
+    completedCollaborationsCount: state.completedCollaborationsCount,
+  };
+}
 
 export function GameLoop() {
   const lastTimeRef = useRef<number>(performance.now());
@@ -29,8 +59,7 @@ export function GameLoop() {
       // Update game state
       tick(cappedDelta);
 
-      // Auto-save - always update lastPlayedAt so offline earnings work on browser close
-      // This means max 30 seconds of "missed" offline time
+      // Auto-save every SAVE_INTERVAL
       if (Date.now() - lastSaveRef.current > SAVE_INTERVAL) {
         const state = useGameStore.getState();
         saveGame(
@@ -47,17 +76,15 @@ export function GameLoop() {
           state.completedContractsCount,
           state.completedLongTermCount,
           state.completedCollaborationsCount,
-          // Finance fields
           state.aum,
           state.creditRating,
           state.leverage,
           state.marketPhase,
           state.crashesSurvived,
           state.hedgingEnabled,
-          // Always update lastPlayedAt during autosaves for reliable offline tracking
-          true,
-          // Buildings - critical for progress!
-          state.buildings
+          true, // updateLastPlayedAt
+          state.buildings,
+          state.moneyPerSecond // lastProductionPerSecond
         );
         lastSaveRef.current = Date.now();
       }
@@ -67,11 +94,10 @@ export function GameLoop() {
 
     animationFrameId = requestAnimationFrame(gameLoop);
 
-    // Track when tab becomes hidden for offline earnings calculation
+    // Save when tab becomes hidden
     const handleVisibilityChange = () => {
       if (document.hidden) {
         isTabHiddenRef.current = true;
-        // Immediately save when tab becomes hidden
         const state = useGameStore.getState();
         saveGame(
           state.money,
@@ -87,7 +113,6 @@ export function GameLoop() {
           state.completedContractsCount,
           state.completedLongTermCount,
           state.completedCollaborationsCount,
-          // Finance fields
           state.aum,
           state.creditRating,
           state.leverage,
@@ -95,8 +120,8 @@ export function GameLoop() {
           state.crashesSurvived,
           state.hedgingEnabled,
           true,
-          // Buildings - critical for progress!
-          state.buildings
+          state.buildings,
+          state.moneyPerSecond
         );
         lastSaveRef.current = Date.now();
       } else {
@@ -104,35 +129,19 @@ export function GameLoop() {
       }
     };
 
-    // Use sendBeacon for reliable save on page close
+    // Use fetch with keepalive for reliable save on page close
     const handleBeforeUnload = () => {
-      const state = useGameStore.getState();
-      // Try regular save first
-      saveGame(
-        state.money,
-        state.followers,
-        state.totalEarnings,
-        state.reputation,
-        state.activeContracts,
-        state.autoAcceptContracts,
-        state.autoAcceptMinReward,
-        state.resources,
-        state.efficiency,
-        state.machineCondition,
-        state.completedContractsCount,
-        state.completedLongTermCount,
-        state.completedCollaborationsCount,
-        // Finance fields
-        state.aum,
-        state.creditRating,
-        state.leverage,
-        state.marketPhase,
-        state.crashesSurvived,
-        state.hedgingEnabled,
-        true,
-        // Buildings - critical for progress!
-        state.buildings
-      );
+      const payload = getSavePayload();
+
+      // Use fetch with keepalive - browser will complete this request even after page closes
+      fetch("/api/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        keepalive: true, // Critical: ensures request completes after page close
+      }).catch(() => {
+        // Ignore errors - page is closing anyway
+      });
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);

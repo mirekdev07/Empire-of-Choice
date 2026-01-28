@@ -233,7 +233,7 @@ export async function getCurrentSaveId(): Promise<string | null> {
 
 /**
  * Get current game state from selected save
- * Automatically calculates and applies offline earnings
+ * Automatically calculates and applies offline earnings using saved production rate
  */
 export async function getGameState(): Promise<GameState | null> {
   const session = await auth();
@@ -248,17 +248,14 @@ export async function getGameState(): Promise<GameState | null> {
 
   const save = await prisma.gameSave.findUnique({
     where: { id: user.currentSaveId },
-    include: { buildings: true },
   });
 
   if (!save) return null;
 
-  const buildings: Record<string, number> = {};
-  for (const b of save.buildings) {
-    buildings[b.buildingId] = b.count;
-  }
+  // Buildings are now stored as JSON
+  const buildings = (save.buildings as Record<string, number>) || {};
 
-  // Calculate and apply offline earnings automatically
+  // Calculate and apply offline earnings using saved production snapshot
   const now = new Date();
   const lastSave = save.lastPlayedAt;
   const secondsElapsed = Math.floor((now.getTime() - lastSave.getTime()) / 1000);
@@ -267,12 +264,11 @@ export async function getGameState(): Promise<GameState | null> {
   let currentTotalEarnings = save.totalEarnings;
 
   // Apply offline earnings if away for more than 30 seconds
-  if (secondsElapsed > 30) {
-    const offlineEarnings = calculateOfflineEarnings(
-      save.chosenPath as PathType,
-      buildings,
-      secondsElapsed
-    );
+  if (secondsElapsed > 30 && save.lastProductionPerSecond > 0) {
+    // Use saved production rate for reliable offline calculation
+    const cappedSeconds = Math.min(secondsElapsed, 28800); // Max 8 hours
+    const offlineMultiplier = 0.20; // 20% of normal production
+    const offlineEarnings = Math.floor(save.lastProductionPerSecond * cappedSeconds * offlineMultiplier);
 
     if (offlineEarnings > 0) {
       currentMoney += offlineEarnings;
@@ -303,7 +299,7 @@ export async function getGameState(): Promise<GameState | null> {
     totalEarnings: currentTotalEarnings,
     buildings,
     path: save.chosenPath as PathType,
-    lastSaveTime: now, // Return current time since we just updated it
+    lastSaveTime: now,
     // Contract system
     activeContracts: (save.activeContracts as unknown as ActiveContract[]) || [],
     autoAcceptContracts: save.autoAcceptContracts,
@@ -347,12 +343,12 @@ async function getCurrentSave() {
 
   return prisma.gameSave.findUnique({
     where: { id: user.currentSaveId },
-    include: { buildings: true },
   });
 }
 
 /**
  * Buy a building (supports buying multiple at once)
+ * Buildings are stored as JSON for atomic saves
  */
 export async function buyBuilding(
   buildingId: string,
@@ -374,12 +370,12 @@ export async function buyBuilding(
     return { success: false, error: `Wymaga Tier ${building.tier}` };
   }
 
+  // Buildings are now stored as JSON
+  const buildings = (save.buildings as Record<string, number>) || {};
+  const currentCount = buildings[buildingId] || 0;
+
   // Check max building count for current tier
   const tierDef = getTierDefinition(save.currentTier, save.chosenPath as PathType);
-  const existingBuilding = save.buildings.find((b) => b.buildingId === buildingId);
-  const currentCount = existingBuilding?.count || 0;
-
-  // Calculate how many we can actually buy (respecting max limit)
   const maxAllowed = tierDef ? tierDef.maxBuildingCount - currentCount : amount;
   const actualAmount = Math.min(amount, maxAllowed);
 
@@ -398,35 +394,24 @@ export async function buyBuilding(
   const newMoney = currentMoney - totalCost;
   const newCount = currentCount + actualAmount;
 
-  await prisma.$transaction([
-    prisma.gameSave.update({
-      where: { id: save.id },
-      data: {
-        money: newMoney,
-        lastPlayedAt: new Date(),
-      },
-    }),
-    prisma.building.upsert({
-      where: {
-        gameSaveId_buildingId: {
-          gameSaveId: save.id,
-          buildingId: buildingId,
-        },
-      },
-      update: { count: newCount },
-      create: {
-        gameSaveId: save.id,
-        buildingId: buildingId,
-        count: newCount,
-      },
-    }),
-  ]);
+  // Update buildings JSON
+  const updatedBuildings = { ...buildings, [buildingId]: newCount };
+
+  // Atomic update - money and buildings together
+  await prisma.gameSave.update({
+    where: { id: save.id },
+    data: {
+      money: newMoney,
+      buildings: updatedBuildings,
+      lastPlayedAt: new Date(),
+    },
+  });
 
   return { success: true, newMoney, newCount };
 }
 
 /**
- * Sync offline earnings
+ * Sync offline earnings (uses saved production rate)
  */
 export async function syncOfflineEarnings(): Promise<{
   success: boolean;
@@ -448,16 +433,16 @@ export async function syncOfflineEarnings(): Promise<{
     return { success: true, earnings: 0, newMoney: save.money };
   }
 
-  const buildingCounts: Record<string, number> = {};
-  for (const b of save.buildings) {
-    buildingCounts[b.buildingId] = b.count;
+  // Use saved production rate for reliable calculation
+  const productionPerSecond = save.lastProductionPerSecond || 0;
+  if (productionPerSecond <= 0) {
+    return { success: true, earnings: 0, newMoney: save.money };
   }
 
-  const earnings = calculateOfflineEarnings(
-    save.chosenPath as PathType,
-    buildingCounts,
-    secondsElapsed
-  );
+  // Calculate offline earnings
+  const cappedSeconds = Math.min(secondsElapsed, 28800); // Max 8 hours
+  const offlineMultiplier = 0.20; // 20% of normal production
+  const earnings = Math.floor(productionPerSecond * cappedSeconds * offlineMultiplier);
 
   const newMoney = save.money + earnings;
 
@@ -474,8 +459,9 @@ export async function syncOfflineEarnings(): Promise<{
 }
 
 /**
- * Save game state
- * @param updateLastPlayedAt - If true, updates lastPlayedAt timestamp. Set to false for regular autosaves.
+ * Save game state - atomic save with JSON buildings
+ * @param updateLastPlayedAt - If true, updates lastPlayedAt timestamp
+ * @param lastProductionPerSecond - Current production rate for offline earnings
  */
 export async function saveGame(
   money: number,
@@ -500,8 +486,10 @@ export async function saveGame(
   hedgingEnabled?: boolean,
   // Control whether to update lastPlayedAt
   updateLastPlayedAt: boolean = false,
-  // Buildings - critical for progress!
-  buildings?: Record<string, number>
+  // Buildings as JSON - atomic save
+  buildings?: Record<string, number>,
+  // Production snapshot for offline earnings
+  lastProductionPerSecond?: number
 ): Promise<{ success: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -517,11 +505,9 @@ export async function saveGame(
     return { success: false, error: "Nie wybrano zapisu gry" };
   }
 
-  const saveId = user.currentSaveId;
-
-  // Update game save fields
+  // Atomic update - everything in one query
   await prisma.gameSave.update({
-    where: { id: saveId },
+    where: { id: user.currentSaveId },
     data: {
       money,
       followers,
@@ -543,60 +529,14 @@ export async function saveGame(
       ...(marketPhase !== undefined ? { marketPhase } : {}),
       ...(crashesSurvived !== undefined ? { crashesSurvived } : {}),
       ...(hedgingEnabled !== undefined ? { hedgingEnabled } : {}),
-      // Only update lastPlayedAt when explicitly requested (tab hidden, page close)
+      // Buildings as JSON - no more relation sync needed
+      ...(buildings !== undefined ? { buildings } : {}),
+      // Production snapshot for offline earnings
+      ...(lastProductionPerSecond !== undefined ? { lastProductionPerSecond } : {}),
+      // Update lastPlayedAt when requested
       ...(updateLastPlayedAt ? { lastPlayedAt: new Date() } : {}),
     },
   });
-
-  // Sync buildings to the Building table (buildings are stored as relations, not JSON)
-  if (buildings !== undefined) {
-    // Get current buildings from database
-    const existingBuildings = await prisma.building.findMany({
-      where: { gameSaveId: saveId },
-    });
-
-    const existingMap = new Map(existingBuildings.map(b => [b.buildingId, b]));
-
-    // Upsert each building from the client state
-    const upsertPromises: Promise<unknown>[] = [];
-
-    for (const [buildingId, count] of Object.entries(buildings)) {
-      if (count > 0) {
-        upsertPromises.push(
-          prisma.building.upsert({
-            where: {
-              gameSaveId_buildingId: {
-                gameSaveId: saveId,
-                buildingId: buildingId,
-              },
-            },
-            update: { count },
-            create: {
-              gameSaveId: saveId,
-              buildingId: buildingId,
-              count,
-            },
-          })
-        );
-      } else if (existingMap.has(buildingId)) {
-        // If count is 0 and building exists, delete it
-        upsertPromises.push(
-          prisma.building.delete({
-            where: {
-              gameSaveId_buildingId: {
-                gameSaveId: saveId,
-                buildingId: buildingId,
-              },
-            },
-          })
-        );
-      }
-    }
-
-    if (upsertPromises.length > 0) {
-      await Promise.all(upsertPromises);
-    }
-  }
 
   return { success: true };
 }
@@ -666,11 +606,8 @@ export async function upgradeTier(): Promise<{
     return { success: false, error: `Potrzebujesz ${req.reputation} reputacji` };
   }
 
-  // Build a map of building counts
-  const buildingCounts: Record<string, number> = {};
-  for (const b of save.buildings) {
-    buildingCounts[b.buildingId] = b.count;
-  }
+  // Buildings are now stored as JSON
+  const buildingCounts = (save.buildings as Record<string, number>) || {};
 
   // Check buildingsAny (at least ONE requirement must be met)
   if (req.buildingsAny && req.buildingsAny.length > 0) {
@@ -761,51 +698,46 @@ export async function performPrestige(): Promise<{
   const startingRatingIndex = isFinance ? Math.min(9, 6 + newRatingBonus) : 6;
   const startingCreditRating = CREDIT_RATINGS_LIST[startingRatingIndex];
 
-  // Update lifetime stats and reset game
-  await prisma.$transaction([
-    // Delete all buildings for this save
-    prisma.building.deleteMany({
-      where: { gameSaveId: save.id },
-    }),
-    // Reset save but keep prestige bonuses
-    prisma.gameSave.update({
-      where: { id: save.id },
-      data: {
-        money: 100 + newMoneyBonus,
-        followers: newFollowersBonus,
-        resources: startingResources,
-        efficiency: startingEfficiency,
-        machineCondition: 100,
-        reputation: 10 + newReputationBonus,
-        currentTier: 1,
-        totalEarnings: 0,
-        timesPrestiged: save.timesPrestiged + 1,
-        totalLifetimeEarnings: save.totalLifetimeEarnings + save.totalEarnings,
-        highestTierReached: Math.max(save.highestTierReached, save.currentTier),
-        prestigeProductionBonus: newProductionBonus,
-        prestigeMoneyBonus: newMoneyBonus,
-        prestigeFollowersBonus: newFollowersBonus,
-        prestigeReputationBonus: newReputationBonus,
-        prestigeResourcesBonus: newResourcesBonus,
-        prestigeEfficiencyBonus: newEfficiencyBonus,
-        // Finance prestige bonuses
-        prestigeAumBonus: newAumBonus,
-        prestigeRatingBonus: newRatingBonus,
-        // Reset Finance state
-        aum: startingAum,
-        creditRating: startingCreditRating,
-        leverage: 1,
-        marketPhase: "stable",
-        crashesSurvived: 0,
-        hedgingEnabled: false,
-        activeContracts: [],
-        completedContractsCount: 0,
-        completedLongTermCount: 0,
-        completedCollaborationsCount: 0,
-        lastPlayedAt: new Date(),
-      },
-    }),
-  ]);
+  // Update lifetime stats and reset game (buildings are now JSON, reset in same query)
+  await prisma.gameSave.update({
+    where: { id: save.id },
+    data: {
+      money: 100 + newMoneyBonus,
+      followers: newFollowersBonus,
+      resources: startingResources,
+      efficiency: startingEfficiency,
+      machineCondition: 100,
+      reputation: 10 + newReputationBonus,
+      currentTier: 1,
+      totalEarnings: 0,
+      buildings: {}, // Reset buildings - they're now JSON
+      lastProductionPerSecond: 0, // Reset production snapshot
+      timesPrestiged: save.timesPrestiged + 1,
+      totalLifetimeEarnings: save.totalLifetimeEarnings + save.totalEarnings,
+      highestTierReached: Math.max(save.highestTierReached, save.currentTier),
+      prestigeProductionBonus: newProductionBonus,
+      prestigeMoneyBonus: newMoneyBonus,
+      prestigeFollowersBonus: newFollowersBonus,
+      prestigeReputationBonus: newReputationBonus,
+      prestigeResourcesBonus: newResourcesBonus,
+      prestigeEfficiencyBonus: newEfficiencyBonus,
+      // Finance prestige bonuses
+      prestigeAumBonus: newAumBonus,
+      prestigeRatingBonus: newRatingBonus,
+      // Reset Finance state
+      aum: startingAum,
+      creditRating: startingCreditRating,
+      leverage: 1,
+      marketPhase: "stable",
+      crashesSurvived: 0,
+      hedgingEnabled: false,
+      activeContracts: [],
+      completedContractsCount: 0,
+      completedLongTermCount: 0,
+      completedCollaborationsCount: 0,
+      lastPlayedAt: new Date(),
+    },
+  });
 
   return {
     success: true,
@@ -1064,10 +996,11 @@ export async function getAchievements(): Promise<{
   const save = await getCurrentSave();
   if (!save) return null;
 
-  // Calculate total building count
+  // Calculate total building count (buildings are now JSON)
+  const buildings = (save.buildings as Record<string, number>) || {};
   let buildingCount = 0;
-  for (const b of save.buildings) {
-    buildingCount += b.count;
+  for (const count of Object.values(buildings)) {
+    buildingCount += count;
   }
 
   const stats: AchievementStats = {
@@ -1115,9 +1048,10 @@ export async function getUnclaimedAchievementsCount(): Promise<number> {
   const save = await getCurrentSave();
   if (!save) return 0;
 
+  const buildingsJson = (save.buildings as Record<string, number>) || {};
   let buildingCount = 0;
-  for (const b of save.buildings) {
-    buildingCount += b.count;
+  for (const count of Object.values(buildingsJson)) {
+    buildingCount += count;
   }
 
   const stats: AchievementStats = {
@@ -1169,9 +1103,10 @@ export async function claimAchievement(
   }
 
   // Verify the achievement is unlocked
+  const buildingsJson = (save.buildings as Record<string, number>) || {};
   let buildingCount = 0;
-  for (const b of save.buildings) {
-    buildingCount += b.count;
+  for (const count of Object.values(buildingsJson)) {
+    buildingCount += count;
   }
 
   const stats: AchievementStats = {
@@ -1228,9 +1163,10 @@ export async function claimAllAchievements(): Promise<{
     return { success: false, error: "Nie wybrano zapisu gry" };
   }
 
+  const buildingsJson = (save.buildings as Record<string, number>) || {};
   let buildingCount = 0;
-  for (const b of save.buildings) {
-    buildingCount += b.count;
+  for (const count of Object.values(buildingsJson)) {
+    buildingCount += count;
   }
 
   const stats: AchievementStats = {

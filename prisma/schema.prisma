@@ -22,7 +22,7 @@ model GameSave {
   name                    String     @default("Nowy zapis")
   chosenPath              String
   createdAt               DateTime   @default(now())
-  lastPlayedAt            DateTime   @default(now())
+  lastPlayedAt            DateTime   @default(now()) @db.Timestamptz
   money                   Float      @default(100)
   followers               Float      @default(0)
   resources               Float      @default(50)   // Surowce dla Industrial
@@ -57,18 +57,13 @@ model GameSave {
   prestigeAumBonus        Float      @default(0)    // Finance prestige bonus
   prestigeRatingBonus     Int        @default(0)    // Finance prestige bonus (rating levels)
   claimedAchievements     Json       @default("[]") // Array of claimed achievement IDs
-  buildings               Building[]
+  // Buildings as JSON for atomic saves (no more relation issues)
+  buildings               Json       @default("{}")
+  // Snapshot of production for reliable offline earnings
+  lastProductionPerSecond Float      @default(0)
   user                    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
-model Building {
-  id         String   @id @default(cuid())
-  gameSaveId String
-  buildingId String
-  count      Int      @default(0)
-  gameSave   GameSave @relation(fields: [gameSaveId], references: [id], onDelete: Cascade)
-
-  @@unique([gameSaveId, buildingId])
-}
+// Building model removed - buildings are now stored as JSON in GameSave
