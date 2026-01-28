@@ -253,40 +253,87 @@ export async function getGameState(): Promise<GameState | null> {
 
   if (!user?.currentSaveId) return null;
 
-  const save = await prisma.gameSave.findUnique({
-    where: { id: user.currentSaveId },
-  });
+  // Use raw SQL to get save data WITH database-calculated time difference
+  // This ensures we use DB server time, not JS server time (avoids timezone/clock issues)
+  const saveWithTime = await prisma.$queryRaw<Array<{
+    id: string;
+    name: string;
+    chosenPath: string;
+    money: number;
+    followers: number;
+    resources: number;
+    reputation: number;
+    efficiency: number;
+    machineCondition: number;
+    currentTier: number;
+    totalEarnings: number;
+    buildings: Record<string, number> | null;
+    lastProductionPerSecond: number;
+    lastPlayedAt: Date;
+    activeContracts: unknown;
+    autoAcceptContracts: boolean;
+    autoAcceptMinReward: number;
+    completedContractsCount: number;
+    completedLongTermCount: number;
+    completedCollaborationsCount: number;
+    aum: number;
+    creditRating: string;
+    leverage: number;
+    marketPhase: string;
+    crashesSurvived: number;
+    hedgingEnabled: boolean;
+    timesPrestiged: number;
+    totalLifetimeEarnings: number;
+    highestTierReached: number;
+    prestigeProductionBonus: number;
+    prestigeMoneyBonus: number;
+    prestigeFollowersBonus: number;
+    prestigeReputationBonus: number;
+    prestigeAumBonus: number;
+    prestigeRatingBonus: number;
+    secondsElapsed: number;
+  }>>`
+    SELECT *,
+    EXTRACT(EPOCH FROM (NOW() - "lastPlayedAt"))::integer as "secondsElapsed"
+    FROM "GameSave"
+    WHERE "id" = ${user.currentSaveId}
+    LIMIT 1
+  `;
 
-  if (!save) return null;
+  if (!saveWithTime || saveWithTime.length === 0) return null;
 
-  // Buildings are now stored as JSON
+  const save = saveWithTime[0];
   const buildings = (save.buildings as Record<string, number>) || {};
 
-  // Calculate and apply offline earnings using saved production snapshot
-  const now = new Date();
-  const lastSave = new Date(save.lastPlayedAt); // Ensure it's a Date object
-  const secondsElapsed = Math.floor((now.getTime() - lastSave.getTime()) / 1000);
+  // Use database-calculated time difference (more reliable than JS Date)
+  const secondsElapsed = Number(save.secondsElapsed) || 0;
+  // Ensure lastProductionPerSecond is a number (Prisma may return Decimal)
+  const productionRate = Number(save.lastProductionPerSecond) || 0;
 
   // Debug log for offline earnings calculation
-  console.log("[getGameState] Offline check:", {
-    now: now.toISOString(),
-    lastSave: lastSave.toISOString(),
+  console.log("[getGameState] Offline check (DB time):", {
     secondsElapsed,
-    lastProductionPerSecond: save.lastProductionPerSecond,
-    willCalculate: secondsElapsed > 30 && save.lastProductionPerSecond > 0,
+    productionRate,
+    willCalculate: secondsElapsed > 30 && productionRate > 0,
   });
 
-  let currentMoney = save.money;
-  let currentTotalEarnings = save.totalEarnings;
+  let currentMoney = Number(save.money);
+  let currentTotalEarnings = Number(save.totalEarnings);
   let offlineEarningsAmount = 0;
   let offlineSecondsAmount = 0;
 
   // Apply offline earnings if away for more than 30 seconds
-  if (secondsElapsed > 30 && save.lastProductionPerSecond > 0) {
+  if (secondsElapsed > 30 && productionRate > 0) {
     // Use saved production rate for reliable offline calculation
     const cappedSeconds = Math.min(secondsElapsed, 28800); // Max 8 hours
     const offlineMultiplier = 0.20; // 20% of normal production
-    const calculatedEarnings = Math.floor(save.lastProductionPerSecond * cappedSeconds * offlineMultiplier);
+    const calculatedEarnings = Math.floor(productionRate * cappedSeconds * offlineMultiplier);
+
+    console.log("[getGameState] Calculating offline earnings:", {
+      cappedSeconds,
+      productionRate,
+      calculatedEarnings,
+    });
 
     if (calculatedEarnings > 0) {
       offlineEarningsAmount = calculatedEarnings;
@@ -300,8 +347,14 @@ export async function getGameState(): Promise<GameState | null> {
         data: {
           money: currentMoney,
           totalEarnings: currentTotalEarnings,
-          lastPlayedAt: now,
+          lastPlayedAt: new Date(),
         },
+      });
+
+      console.log("[getGameState] Offline earnings applied:", {
+        offlineEarningsAmount,
+        offlineSecondsAmount,
+        newMoney: currentMoney,
       });
     }
   }
@@ -310,16 +363,16 @@ export async function getGameState(): Promise<GameState | null> {
     saveId: save.id,
     saveName: save.name,
     money: currentMoney,
-    followers: save.followers,
-    resources: save.resources,
-    reputation: save.reputation,
-    efficiency: save.efficiency,
-    machineCondition: save.machineCondition,
+    followers: Number(save.followers),
+    resources: Number(save.resources),
+    reputation: Number(save.reputation),
+    efficiency: Number(save.efficiency),
+    machineCondition: Number(save.machineCondition),
     currentTier: save.currentTier,
     totalEarnings: currentTotalEarnings,
     buildings,
     path: save.chosenPath as PathType,
-    lastSaveTime: now,
+    lastSaveTime: new Date(),
     // Contract system
     activeContracts: (save.activeContracts as unknown as ActiveContract[]) || [],
     autoAcceptContracts: save.autoAcceptContracts,
@@ -328,22 +381,22 @@ export async function getGameState(): Promise<GameState | null> {
     completedLongTermCount: save.completedLongTermCount,
     completedCollaborationsCount: save.completedCollaborationsCount,
     // Finance data
-    aum: save.aum,
+    aum: Number(save.aum),
     creditRating: save.creditRating,
-    leverage: save.leverage,
+    leverage: Number(save.leverage),
     marketPhase: save.marketPhase,
     crashesSurvived: save.crashesSurvived,
     hedgingEnabled: save.hedgingEnabled,
     // Prestige data
     timesPrestiged: save.timesPrestiged,
-    totalLifetimeEarnings: save.totalLifetimeEarnings,
+    totalLifetimeEarnings: Number(save.totalLifetimeEarnings),
     highestTierReached: save.highestTierReached,
-    prestigeProductionBonus: save.prestigeProductionBonus,
-    prestigeMoneyBonus: save.prestigeMoneyBonus,
-    prestigeFollowersBonus: save.prestigeFollowersBonus,
-    prestigeReputationBonus: save.prestigeReputationBonus,
-    prestigeAumBonus: save.prestigeAumBonus,
-    prestigeRatingBonus: save.prestigeRatingBonus,
+    prestigeProductionBonus: Number(save.prestigeProductionBonus),
+    prestigeMoneyBonus: Number(save.prestigeMoneyBonus),
+    prestigeFollowersBonus: Number(save.prestigeFollowersBonus),
+    prestigeReputationBonus: Number(save.prestigeReputationBonus),
+    prestigeAumBonus: Number(save.prestigeAumBonus),
+    prestigeRatingBonus: Number(save.prestigeRatingBonus),
     // Offline earnings info (for showing modal)
     offlineEarnings: offlineEarningsAmount > 0 ? offlineEarningsAmount : undefined,
     offlineSeconds: offlineSecondsAmount > 0 ? offlineSecondsAmount : undefined,
