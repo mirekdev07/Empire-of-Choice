@@ -7,6 +7,7 @@ import { buyBuilding } from "@/actions/gameActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 
 interface BuildingCardProps {
   building: BuildingDefinition;
@@ -15,6 +16,7 @@ interface BuildingCardProps {
 }
 
 export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProps) {
+  const t = useTranslations("building");
   const money = useGameStore((state) => state.money);
   const buildings = useGameStore((state) => state.buildings);
   const moneyPerSecond = useGameStore((state) => state.moneyPerSecond);
@@ -65,7 +67,7 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
         setMoney(currentMoney);
         setBuildings(currentBuildings);
         updateProductionRates();
-        setError(result.error || "Blad zakupu");
+        setError(result.error || t("purchaseError"));
       }
     });
   };
@@ -94,25 +96,25 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
         <div className="space-y-2">
           {/* Production info */}
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Zarobek:</span>
+            <span className="text-slate-400">{t("earnings")}:</span>
             <span className="text-green-400">+${building.baseProduction.toFixed(2)}/s</span>
           </div>
           {building.followersPerSecond > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Followers:</span>
+              <span className="text-slate-400">{t("followers")}:</span>
               <span className="text-purple-400">+{building.followersPerSecond.toFixed(2)}/s</span>
             </div>
           )}
           {building.resourcesPerSecond !== undefined && building.resourcesPerSecond !== 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Surowce:</span>
+              <span className="text-slate-400">{t("resources")}:</span>
               <span className={building.resourcesPerSecond > 0 ? "text-orange-400" : "text-red-400"}>
                 {building.resourcesPerSecond > 0 ? "+" : ""}{building.resourcesPerSecond.toFixed(2)}/s
               </span>
             </div>
           )}
           <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Lacznie:</span>
+            <span className="text-slate-400">{t("total")}:</span>
             <span style={{ color: pathColor }}>
               ${(building.baseProduction * count).toFixed(2)}/s
             </span>
@@ -121,19 +123,19 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
           {/* Cost and buy button */}
           <div className="pt-2 border-t border-slate-700">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-slate-400 text-sm">Koszt:</span>
+              <span className="text-slate-400 text-sm">{t("cost")}:</span>
               <span className={`font-semibold ${canAfford1 ? "text-green-400" : "text-red-400"}`}>
                 ${formatMoney(cost1)}
               </span>
             </div>
 
             {!canAfford1 && !isMaxed && timeLeft !== null && timeLeft > 0 && (
-              <p className="text-xs text-slate-500 mb-2 text-right">za {formatTime(timeLeft)}</p>
+              <p className="text-xs text-slate-500 mb-2 text-right">{formatTime(timeLeft)}</p>
             )}
 
             {isMaxed ? (
               <Button disabled className="w-full" variant="outline">
-                Maksymalna ilosc
+                {t("maxAmount")}
               </Button>
             ) : (
               <div className="grid grid-cols-4 gap-1">
@@ -146,9 +148,9 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
                     borderColor: pathColor,
                   }}
                   variant={canAfford1 ? "default" : "outline"}
-                  title={`Koszt: $${formatMoney(cost1)}`}
+                  title={`${t("cost")}: $${formatMoney(cost1)}`}
                 >
-                  {isPending ? "..." : "Kup"}
+                  {isPending ? "..." : t("buy")}
                 </Button>
                 <Button
                   onClick={() => handleBuy(5)}
@@ -159,7 +161,7 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
                     borderColor: pathColor,
                   }}
                   variant={canAfford5 ? "default" : "outline"}
-                  title={`Koszt: $${formatMoney(cost5)}`}
+                  title={`${t("cost")}: $${formatMoney(cost5)}`}
                 >
                   x5
                 </Button>
@@ -172,7 +174,7 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
                     borderColor: pathColor,
                   }}
                   variant={canAfford10 ? "default" : "outline"}
-                  title={`Koszt: $${formatMoney(cost10)}`}
+                  title={`${t("cost")}: $${formatMoney(cost10)}`}
                 >
                   x10
                 </Button>
@@ -185,7 +187,7 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
                     borderColor: pathColor,
                   }}
                   variant={canAffordMax ? "default" : "outline"}
-                  title={`Kup ${maxAffordable} za $${formatMoney(costMax)}`}
+                  title={`${t("buyFor", { count: maxAffordable })} $${formatMoney(costMax)}`}
                 >
                   Max
                 </Button>

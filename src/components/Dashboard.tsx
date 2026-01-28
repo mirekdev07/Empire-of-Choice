@@ -27,6 +27,7 @@ interface DashboardProps {
 
 export function Dashboard({ initialState }: DashboardProps) {
   const t = useTranslations("dashboard");
+  const tReq = useTranslations("requirements");
   const [offlineEarnings, setOfflineEarnings] = useState<number | null>(null);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
@@ -34,7 +35,6 @@ export function Dashboard({ initialState }: DashboardProps) {
 
   // Offline earnings button state
   const [hasOfflineReward, setHasOfflineReward] = useState(false);
-  const [isCollectingOffline, setIsCollectingOffline] = useState(false);
   const [offlineSecondsAway, setOfflineSecondsAway] = useState(0);
 
   const path = useGameStore((state) => state.path);
@@ -87,16 +87,26 @@ export function Dashboard({ initialState }: DashboardProps) {
       const now = Date.now();
       const secondsAway = lastPlayed > 0 ? Math.floor((now - lastPlayed) / 1000) : 0;
 
-      // If new session and was away for more than 30 seconds, show collect button
+      // If new session and was away for more than 30 seconds, calculate offline earnings IMMEDIATELY
+      // This must happen BEFORE GameLoop starts auto-saving (which would reset lastPlayedAt)
       if (isNewSession && secondsAway > 30) {
-        setHasOfflineReward(true);
-        setOfflineSecondsAway(secondsAway);
+        try {
+          const result = await syncOfflineEarnings();
+          if (result.success && result.earnings && result.earnings > 0) {
+            // Store earnings and show the reward notification
+            setOfflineEarnings(result.earnings);
+            setHasOfflineReward(true);
+            setOfflineSecondsAway(secondsAway);
+          }
+        } catch (error) {
+          console.error("Error calculating offline earnings:", error);
+        }
       }
 
       // Update last played time
       localStorage.setItem(LAST_PLAYED_KEY, now.toString());
 
-      // Load fresh state from server
+      // Load fresh state from server (this includes the updated money from syncOfflineEarnings)
       const freshState = await getGameState();
       if (freshState) {
         initializeFromServer(freshState);
@@ -115,24 +125,13 @@ export function Dashboard({ initialState }: DashboardProps) {
     return () => clearInterval(updateInterval);
   }, [initialState, initializeFromServer]);
 
-  // Collect offline earnings
-  const handleCollectOffline = async () => {
-    setIsCollectingOffline(true);
-    try {
-      const result = await syncOfflineEarnings();
-      if (result.success && result.earnings && result.earnings > 0) {
-        setOfflineEarnings(result.earnings);
-        setShowOfflineModal(true);
-        // Refresh state from server
-        const freshState = await getGameState();
-        if (freshState) {
-          initializeFromServer(freshState);
-        }
-      }
-    } finally {
-      setIsCollectingOffline(false);
-      setHasOfflineReward(false);
+  // Collect offline earnings - earnings are already calculated and added at init
+  // This button just shows the reward modal
+  const handleCollectOffline = () => {
+    if (offlineEarnings && offlineEarnings > 0) {
+      setShowOfflineModal(true);
     }
+    setHasOfflineReward(false);
   };
 
   // Handle tab visibility - sync offline earnings when returning to tab
@@ -220,19 +219,18 @@ export function Dashboard({ initialState }: DashboardProps) {
     }, path);
     tierRequirementsDisplay = Object.entries(check.progress).map(([key, val]) => {
       const labels: Record<string, string> = {
-        totalEarnings: "Zarobki",
-        followers: "Followers",
-        resources: "Surowce",
-        reputation: "Reputacja",
-        efficiency: "Efektywność",
-        completedContracts: "Kontrakty",
-        completedLongTermContracts: "Umowy długoterm.",
-        scandalsSurvived: "Skandale przetrwane",
-        // Finance labels
-        aum: "Kapitał (AUM)",
-        minRating: "Rating",
-        diversification: "Dywersyfikacja",
-        crashesSurvived: "Przetrwane krachy",
+        totalEarnings: tReq("totalEarnings"),
+        followers: tReq("followers"),
+        resources: tReq("resources"),
+        reputation: tReq("reputation"),
+        efficiency: tReq("efficiency"),
+        completedContracts: tReq("contracts"),
+        completedLongTermContracts: tReq("longTermContracts"),
+        scandalsSurvived: tReq("scandalsSurvived"),
+        aum: tReq("aum"),
+        minRating: tReq("minRating"),
+        diversification: tReq("diversification"),
+        crashesSurvived: tReq("crashesSurvived"),
       };
       return {
         key,
@@ -311,23 +309,22 @@ export function Dashboard({ initialState }: DashboardProps) {
 
       <div className="p-3 pt-16 md:p-6 md:pt-6 max-w-7xl mx-auto">
         {/* Collect offline earnings button - for browser close/reopen */}
-        {hasOfflineReward && (
+        {hasOfflineReward && offlineEarnings && offlineEarnings > 0 && (
           <div className="mb-4 p-4 bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border border-yellow-600/50 rounded-lg flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">💰</span>
               <div>
                 <p className="text-yellow-400 font-semibold">{t("welcomeBack")}</p>
                 <p className="text-slate-400 text-sm">
-                  {Math.floor(offlineSecondsAway / 60)} min offline
+                  {Math.floor(offlineSecondsAway / 60)} min offline - ${formatMoney(offlineEarnings)}
                 </p>
               </div>
             </div>
             <Button
               onClick={handleCollectOffline}
-              disabled={isCollectingOffline}
               className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white"
             >
-              {isCollectingOffline ? t("collecting") : t("collectOffline")}
+              {t("collectOffline")}
             </Button>
           </div>
         )}

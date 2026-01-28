@@ -466,7 +466,9 @@ export async function saveGame(
   crashesSurvived?: number,
   hedgingEnabled?: boolean,
   // Control whether to update lastPlayedAt
-  updateLastPlayedAt: boolean = false
+  updateLastPlayedAt: boolean = false,
+  // Buildings - critical for progress!
+  buildings?: Record<string, number>
 ): Promise<{ success: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user?.id) {
@@ -505,6 +507,8 @@ export async function saveGame(
       ...(marketPhase !== undefined ? { marketPhase } : {}),
       ...(crashesSurvived !== undefined ? { crashesSurvived } : {}),
       ...(hedgingEnabled !== undefined ? { hedgingEnabled } : {}),
+      // Buildings - critical for progress!
+      ...(buildings !== undefined ? { buildings } : {}),
       // Only update lastPlayedAt when explicitly requested (tab hidden, page close)
       ...(updateLastPlayedAt ? { lastPlayedAt: new Date() } : {}),
     },

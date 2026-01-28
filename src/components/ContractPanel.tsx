@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { InfoTooltip } from "./InfoTooltip";
 import { saveGame } from "@/actions/gameActions";
 import { Contract } from "@/config/contracts";
+import { useTranslations } from "next-intl";
 
 const MAX_ACTIVE_CONTRACTS = 3;
 
@@ -16,6 +17,7 @@ interface ContractPanelProps {
 }
 
 export function ContractPanel({ pathColor }: ContractPanelProps) {
+  const t = useTranslations("contract");
   const activeContracts = useGameStore((state) => state.activeContracts);
   const pendingContractOffer = useGameStore((state) => state.pendingContractOffer);
   const acceptContract = useGameStore((state) => state.acceptContract);
@@ -57,7 +59,18 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
       state.machineCondition,
       state.completedContractsCount,
       state.completedLongTermCount,
-      state.completedCollaborationsCount
+      state.completedCollaborationsCount,
+      // Finance fields
+      state.aum,
+      state.creditRating,
+      state.leverage,
+      state.marketPhase,
+      state.crashesSurvived,
+      state.hedgingEnabled,
+      // Update lastPlayedAt
+      false,
+      // Buildings
+      state.buildings
     );
   };
 
@@ -79,10 +92,10 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
 
   const getContractTypeLabel = (type: string) => {
     switch (type) {
-      case "sponsor": return "Sponsoring";
-      case "long_term": return "Umowa dlugoterm.";
-      case "collaboration": return "Kolaboracja";
-      case "production": return "Produkcja";
+      case "sponsor": return t("sponsorship");
+      case "long_term": return t("longTerm");
+      case "collaboration": return t("collaboration");
+      case "production": return t("production");
       default: return type;
     }
   };
@@ -103,74 +116,26 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
   return (
     <div className="bg-slate-900 rounded-lg p-4 mb-4 relative">
       <InfoTooltip
-        title="Kontrakty"
-        content={
-          path === "INDUSTRIAL" ? (
-            <>
-              <p>Kontrakty produkcyjne od klientow biznesowych.</p>
-              <p className="mt-2 text-slate-400">Warunki pojawienia sie:</p>
-              <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                <li>Nowa oferta co ~20 sekund</li>
-                <li>Tylko gdy nie masz oczekujacej oferty</li>
-                <li><strong>Maksymalnie 3 aktywne kontrakty!</strong></li>
-              </ul>
-              <p className="mt-2 text-slate-400">Typy kontraktow:</p>
-              <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                <li><span className="text-orange-400">Lokalne</span> - szybkie, male nagrody</li>
-                <li><span className="text-orange-400">Regionalne</span> - srednie nagrody</li>
-                <li><span className="text-orange-400">Krajowe</span> - duze nagrody</li>
-                <li><span className="text-orange-400">Rzadowe</span> - bonus do efektywnosci</li>
-                <li><span className="text-orange-400">Miedzynarodowe</span> - bonus surowcow</li>
-              </ul>
-              <p className="mt-2 text-yellow-400 text-xs">
-                Uwaga: Nieukonczone kontrakty obnizaja efektywnosc!
-              </p>
-            </>
-          ) : (
-            <>
-              <p>Kontrakty to oferty wspolpracy z markami i innymi tworcami.</p>
-              <p className="mt-2 text-slate-400">Warunki pojawienia sie:</p>
-              <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                <li>Minimum <strong>20 reputacji</strong></li>
-                <li>Nowa oferta co ~20 sekund</li>
-                <li>Tylko gdy nie masz oczekujacej oferty</li>
-                <li><strong>Maksymalnie 3 aktywne kontrakty!</strong></li>
-              </ul>
-              <p className="mt-2 text-slate-400">Typy kontraktow:</p>
-              <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                <li><span className="text-green-400">Sponsoring</span> - szybkie, mniejsze nagrody</li>
-                <li><span className="text-blue-400">Dlugoterminowe</span> - wieksze nagrody, dluzszy czas</li>
-                <li><span className="text-purple-400">Kolaboracje</span> - duzo followers</li>
-              </ul>
-              <p className="mt-2 text-slate-400">Auto-akceptacja:</p>
-              <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                <li>Wlacz aby automatycznie akceptowac kontrakty</li>
-                <li>Ustaw minimalna nagrode do auto-akceptacji</li>
-              </ul>
-              <p className="mt-2 text-yellow-400 text-xs">
-                Uwaga: Nieukonczone kontrakty obnizaja reputacje!
-              </p>
-            </>
-          )
-        }
+        title={t("tooltipTitle")}
+        content={<p>{t("tooltipDesc")}</p>}
       />
       {/* Contract stats */}
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-          <span>Kontrakty</span>
+          <span>{t("title")}</span>
           <span className="text-xs text-slate-500">({activeContracts.length}/{MAX_ACTIVE_CONTRACTS})</span>
         </h3>
         <div className="flex gap-3 text-xs text-slate-400">
-          <span>Ukonczone: {completedContractsCount}</span>
-          <span>Dlugoterm.: {completedLongTermCount}</span>
-          <span>Kolaboracje: {completedCollaborationsCount}</span>
+          <span>{t("completed")}: {completedContractsCount}</span>
+          <span>{t("longTermShort")}: {completedLongTermCount}</span>
+          <span>{t("collaborations")}: {completedCollaborationsCount}</span>
         </div>
       </div>
 
       {/* Auto-accept controls */}
       <div className="bg-slate-800 rounded-lg p-3 mb-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-300">Auto-akceptacja</span>
+          <span className="text-sm text-slate-300">{t("autoAccept")}</span>
           <button
             onClick={() => setAutoAcceptContracts(!autoAcceptContracts)}
             className={`relative w-11 h-6 rounded-full transition-colors ${
@@ -186,7 +151,7 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
         </div>
         {autoAcceptContracts && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400">Min. nagroda:</span>
+            <span className="text-xs text-slate-400">{t("minReward")}:</span>
             <input
               type="number"
               value={minRewardInput}
@@ -209,14 +174,11 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
         <div className="text-center py-4 text-slate-500">
           {needsMoreReputation ? (
             <>
-              <p className="text-yellow-400">Potrzebujesz minimum 20 reputacji</p>
-              <p className="text-xs mt-1">Aktualna reputacja: {reputation}/20</p>
+              <p className="text-yellow-400">{t("needReputation")}</p>
+              <p className="text-xs mt-1">{reputation}/20</p>
             </>
           ) : (
-            <>
-              <p>Oczekiwanie na oferty kontraktow...</p>
-              <p className="text-xs mt-1">Nowe oferty pojawiaja sie co ~20 sekund</p>
-            </>
+            <p>{t("waiting")}</p>
           )}
         </div>
       )}
@@ -224,8 +186,7 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
       {/* Max contracts reached */}
       {isAtMaxContracts && !pendingContractOffer && (
         <div className="text-center py-2 mb-3 bg-yellow-900/30 rounded-lg border border-yellow-600/50">
-          <p className="text-yellow-400 text-sm">Osiagnieto limit {MAX_ACTIVE_CONTRACTS} aktywnych kontraktow</p>
-          <p className="text-xs text-slate-400 mt-1">Nowe oferty pojawia sie po ukonczeniu kontraktu</p>
+          <p className="text-yellow-400 text-sm">{t("maxReached", { count: activeContracts.length, max: MAX_ACTIVE_CONTRACTS })}</p>
         </div>
       )}
 
@@ -243,31 +204,31 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
               <h4 className="text-white font-semibold">{pendingContractOffer.name}</h4>
               <p className="text-slate-400 text-sm">{pendingContractOffer.description}</p>
             </div>
-            <span className="text-xs text-slate-500">NOWA OFERTA!</span>
+            <span className="text-xs text-slate-500">{t("newOffer")}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3 text-xs">
             <div className="bg-slate-800 rounded p-2">
-              <p className="text-slate-500">Nagroda</p>
+              <p className="text-slate-500">{t("reward")}</p>
               <p className="text-green-400">${formatMoney(pendingContractOffer.reward.money)}</p>
               {pendingContractOffer.reward.followers && (
                 <p className="text-purple-400">+{formatMoney(pendingContractOffer.reward.followers)} followers</p>
               )}
               {pendingContractOffer.reward.efficiency && (
-                <p className="text-cyan-400">+{pendingContractOffer.reward.efficiency}% efektywnosci</p>
+                <p className="text-cyan-400">+{pendingContractOffer.reward.efficiency}%</p>
               )}
               {pendingContractOffer.reward.resources && (
-                <p className="text-orange-400">+{formatMoney(pendingContractOffer.reward.resources)} surowcow</p>
+                <p className="text-orange-400">+{formatMoney(pendingContractOffer.reward.resources)}</p>
               )}
-              <p className="text-yellow-400">+{pendingContractOffer.reward.reputation} reputacji</p>
+              <p className="text-yellow-400">+{pendingContractOffer.reward.reputation}</p>
             </div>
             <div className="bg-slate-800 rounded p-2">
-              <p className="text-slate-500">Kara za niedotrzymanie</p>
-              <p className="text-red-400">-{pendingContractOffer.penalty.reputation} reputacji</p>
+              <p className="text-slate-500">{t("penalty")}</p>
+              <p className="text-red-400">-{pendingContractOffer.penalty.reputation}</p>
               {pendingContractOffer.penalty.efficiency && (
-                <p className="text-red-400">-{pendingContractOffer.penalty.efficiency}% efektywnosci</p>
+                <p className="text-red-400">-{pendingContractOffer.penalty.efficiency}%</p>
               )}
-              <p className="text-slate-400 mt-1">Czas: {Math.floor(pendingContractOffer.duration / 60)}min</p>
+              <p className="text-slate-400 mt-1">{t("timeLeft")}: {Math.floor(pendingContractOffer.duration / 60)}min</p>
             </div>
           </div>
 
@@ -278,7 +239,7 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
               className="flex-1"
               style={{ backgroundColor: pathColor }}
             >
-              Akceptuj
+              {t("accept")}
             </Button>
             <Button
               onClick={declineContract}
@@ -286,7 +247,7 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
               variant="outline"
               className="flex-1 border-slate-500 text-slate-300 hover:bg-slate-700 hover:text-white"
             >
-              Odrzuc
+              {t("reject")}
             </Button>
           </div>
         </div>
@@ -295,7 +256,6 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
       {/* Active contracts */}
       {activeContracts.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs text-slate-500 mb-2">Aktywne kontrakty ({activeContracts.length})</p>
           {activeContracts.map((ac, index) => {
             const progress = getContractProgress(ac.startTime, ac.endTime);
             const timeLeft = getTimeRemaining(ac.endTime);
@@ -319,7 +279,7 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
                 </div>
                 <Progress value={progress} className="h-1.5" />
                 <div className="flex justify-between mt-1 text-xs text-slate-500">
-                  <span>Nagroda: ${formatMoney(ac.contract.reward.money)}</span>
+                  <span>{t("reward")}: ${formatMoney(ac.contract.reward.money)}</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
               </div>

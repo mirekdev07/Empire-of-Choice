@@ -3,55 +3,7 @@
 import { useGameStore } from "@/store/useGameStore";
 import { InfoTooltip } from "./InfoTooltip";
 import { formatMoney } from "@/lib/engine";
-
-// Client type definitions with their properties
-const CLIENT_TYPES = [
-  {
-    id: "f2_client",
-    name: "Klienci indywidualni",
-    icon: "👤",
-    aumPerClient: 500,
-    commissionRate: 2.0, // %
-    requiredRating: "BBB",
-    tier: 2,
-  },
-  {
-    id: "f3_corporate",
-    name: "Klienci korporacyjni",
-    icon: "🏢",
-    aumPerClient: 5000,
-    commissionRate: 1.5,
-    requiredRating: "A",
-    tier: 3,
-  },
-  {
-    id: "f4_pension",
-    name: "Fundusze emerytalne",
-    icon: "👴",
-    aumPerClient: 50000,
-    commissionRate: 0.8,
-    requiredRating: "AA",
-    tier: 4,
-  },
-  {
-    id: "f4_bank",
-    name: "Depozyty bankowe",
-    icon: "🏦",
-    aumPerClient: 10000,
-    commissionRate: 0.5,
-    requiredRating: "AA",
-    tier: 4,
-  },
-  {
-    id: "f5_sovereign",
-    name: "Fundusze panstwowe",
-    icon: "🌍",
-    aumPerClient: 500000,
-    commissionRate: 0.3,
-    requiredRating: "AAA",
-    tier: 5,
-  },
-];
+import { useTranslations } from "next-intl";
 
 // Credit rating multipliers for client acquisition
 const RATING_CLIENT_MULTIPLIERS: Record<string, number> = {
@@ -72,10 +24,60 @@ interface ClientPanelProps {
 }
 
 export function ClientPanel({ pathColor }: ClientPanelProps) {
+  const t = useTranslations("clients");
   const buildings = useGameStore((state) => state.buildings);
   const aum = useGameStore((state) => state.aum);
   const creditRating = useGameStore((state) => state.creditRating);
   const currentTier = useGameStore((state) => state.currentTier);
+
+  // Client type definitions with their properties
+  const CLIENT_TYPES = [
+    {
+      id: "f2_client",
+      name: t("individual"),
+      icon: "👤",
+      aumPerClient: 500,
+      commissionRate: 2.0,
+      requiredRating: "BBB",
+      tier: 2,
+    },
+    {
+      id: "f3_corporate",
+      name: t("corporate"),
+      icon: "🏢",
+      aumPerClient: 5000,
+      commissionRate: 1.5,
+      requiredRating: "A",
+      tier: 3,
+    },
+    {
+      id: "f4_pension",
+      name: t("pension"),
+      icon: "👴",
+      aumPerClient: 50000,
+      commissionRate: 0.8,
+      requiredRating: "AA",
+      tier: 4,
+    },
+    {
+      id: "f4_bank",
+      name: t("bank"),
+      icon: "🏦",
+      aumPerClient: 10000,
+      commissionRate: 0.5,
+      requiredRating: "AA",
+      tier: 4,
+    },
+    {
+      id: "f5_sovereign",
+      name: t("sovereign"),
+      icon: "🌍",
+      aumPerClient: 500000,
+      commissionRate: 0.3,
+      requiredRating: "AAA",
+      tier: 5,
+    },
+  ];
 
   // Calculate client statistics
   const clientStats = CLIENT_TYPES.map((clientType) => {
@@ -112,42 +114,28 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
     <div className="bg-slate-900 rounded-lg p-4 mb-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-          <span>👥</span> Panel Klientow
+          <span>👥</span> {t("title")}
         </h3>
         <InfoTooltip
-          title="Panel Klientow"
-          content={
-            <>
-              <p>Zarzadzaj klientami i ich kapitalem.</p>
-              <p className="mt-2 text-slate-400">Typy klientow:</p>
-              <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                <li>Indywidualni - niski AUM, wysoka prowizja</li>
-                <li>Korporacyjni - sredni AUM, srednia prowizja</li>
-                <li>Emerytalni - wysoki AUM, niska prowizja</li>
-                <li>Panstwowi - ogromny AUM, minimalna prowizja</li>
-              </ul>
-              <p className="mt-2 text-yellow-400 text-xs">
-                Wyzszy rating = wieksza zdolnosc pozyskiwania klientow
-              </p>
-            </>
-          }
+          title={t("tooltipTitle")}
+          content={<p>{t("tooltipDesc")}</p>}
         />
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="bg-slate-800 rounded p-3 text-center">
-          <p className="text-slate-400 text-xs">Laczni klienci</p>
+          <p className="text-slate-400 text-xs">{t("totalClients")}</p>
           <p className="text-xl font-bold text-white">{totalClients}</p>
         </div>
         <div className="bg-slate-800 rounded p-3 text-center">
-          <p className="text-slate-400 text-xs">AUM od klientow</p>
+          <p className="text-slate-400 text-xs">{t("aumFromClients")}</p>
           <p className="text-xl font-bold text-cyan-400">
             ${formatMoney(totalClientAum)}
           </p>
         </div>
         <div className="bg-slate-800 rounded p-3 text-center">
-          <p className="text-slate-400 text-xs">Prowizje/rok</p>
+          <p className="text-slate-400 text-xs">{t("commissionsYear")}</p>
           <p className="text-xl font-bold text-green-400">
             ${formatMoney(annualCommission)}
           </p>
@@ -158,7 +146,7 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
       <div className="bg-slate-800 rounded p-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-sm">Rating kredytowy:</span>
+            <span className="text-slate-400 text-sm">{t("creditRating")}:</span>
             <span
               className="font-bold px-2 py-0.5 rounded"
               style={{ backgroundColor: pathColor }}
@@ -167,7 +155,6 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
             </span>
           </div>
           <div className="text-right">
-            <span className="text-slate-400 text-xs">Mnoznik pozyskiwania: </span>
             <span
               className={`font-bold ${
                 ratingMultiplier >= 1 ? "text-green-400" : "text-red-400"
@@ -177,11 +164,6 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
             </span>
           </div>
         </div>
-        {ratingMultiplier < 1 && (
-          <p className="text-yellow-400 text-xs mt-2">
-            Niski rating - klienci moga odejsc! Popraw rating aby zatrzymac klientow.
-          </p>
-        )}
       </div>
 
       {/* Client List */}
@@ -209,27 +191,24 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
             </div>
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div>
-                <span className="text-slate-500">AUM/klient:</span>
-                <span className="text-cyan-400 ml-1">
+                <span className="text-cyan-400">
                   ${formatMoney(client.aumPerClient)}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Laczny AUM:</span>
-                <span className="text-cyan-400 ml-1">
+                <span className="text-cyan-400">
                   ${formatMoney(client.totalAum)}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Prowizja:</span>
-                <span className="text-green-400 ml-1">
+                <span className="text-green-400">
                   {client.commissionRate}%
                 </span>
               </div>
             </div>
             {client.isUnlocked && client.count === 0 && (
               <p className="text-slate-500 text-xs mt-1">
-                Wymagany rating: {client.requiredRating}
+                {t("requiresRating", { rating: client.requiredRating })}
               </p>
             )}
           </div>
@@ -239,15 +218,11 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
       {/* Commission Info */}
       <div className="mt-4 bg-green-900/30 border border-green-500/30 rounded p-3">
         <div className="flex items-center justify-between">
-          <span className="text-green-400 text-sm">Przychod z prowizji:</span>
+          <span className="text-green-400 text-sm">{t("commissionIncome")}:</span>
           <span className="text-green-400 font-bold">
             +${(commissionPerSecond * ratingMultiplier).toFixed(4)}/s
           </span>
         </div>
-        <p className="text-slate-400 text-xs mt-1">
-          Prowizja pobierana od zarzadzanego kapitalu klientow. Rating wplywa na
-          efektywnosc pobierania prowizji.
-        </p>
       </div>
     </div>
   );

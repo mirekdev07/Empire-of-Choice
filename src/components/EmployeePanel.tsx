@@ -4,8 +4,10 @@ import { useGameStore } from "@/store/useGameStore";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/engine";
 import { InfoTooltip } from "./InfoTooltip";
+import { useTranslations } from "next-intl";
 
 export function EmployeePanel({ pathColor }: { pathColor: string }) {
+  const t = useTranslations("employees");
   const employeeMorale = useGameStore((state) => state.employeeMorale);
   const fixedCostsPerSecond = useGameStore((state) => state.fixedCostsPerSecond);
   const currentTier = useGameStore((state) => state.currentTier);
@@ -27,47 +29,17 @@ export function EmployeePanel({ pathColor }: { pathColor: string }) {
   return (
     <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-4 relative">
       <InfoTooltip
-        title="Zarzadzanie zespolem"
-        content={
-          <>
-            <p>W Tier 3+ zatrudniasz pracownikow, ktorzy generuja przychod, ale wymagaja pensji.</p>
-            <p className="mt-2 text-slate-400">Morale zespolu (50-120%):</p>
-            <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-              <li><span className="text-green-400">&gt;100%</span> - bonus do produktywnosci</li>
-              <li><span className="text-blue-400">70-100%</span> - normalna produktywnosc</li>
-              <li><span className="text-yellow-400">55-70%</span> - obnizena produktywnosc</li>
-              <li><span className="text-red-400">&lt;55%</span> - krytycznie niskie!</li>
-            </ul>
-            <p className="mt-2 text-slate-400">Co wplywa na morale:</p>
-            <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-              <li><span className="text-green-400">+5%</span> - przycisk "Zmotywuj zespol"</li>
-              <li><span className="text-red-400">-0.5%/s</span> - brak aktywnosci (po 30s)</li>
-            </ul>
-            <p className="mt-2 text-slate-400">Koszty stale:</p>
-            <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-              <li>Pensje pracownikow = ~20% produkcji</li>
-              <li>Platne automatycznie co sekunde</li>
-            </ul>
-            {currentTier >= 4 && (
-              <>
-                <p className="mt-2 text-slate-400">Dywersyfikacja (Tier 4+):</p>
-                <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                  <li>+5% za kazdy unikalny typ aktywa</li>
-                  <li>Maksymalnie +50% bonusu</li>
-                </ul>
-              </>
-            )}
-          </>
-        }
+        title={t("tooltipTitle")}
+        content={<p>{t("tooltipDesc")}</p>}
       />
       <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-        <span>👥</span> Zarzadzanie zespolem
+        <span>👥</span> {t("title")}
       </h3>
 
       <div className={`grid grid-cols-1 sm:grid-cols-2 ${currentTier >= 4 ? "md:grid-cols-3" : ""} gap-3 md:gap-4 mb-3`}>
         {/* Morale */}
         <div className="bg-slate-900 rounded-lg p-3">
-          <p className="text-slate-400 text-xs uppercase mb-1">Morale zespolu</p>
+          <p className="text-slate-400 text-xs uppercase mb-1">{t("morale")}</p>
           <p
             className={`text-2xl font-bold ${
               isCriticalMorale
@@ -96,33 +68,27 @@ export function EmployeePanel({ pathColor }: { pathColor: string }) {
             />
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            {isHighMorale && "Bonus produktywnosci!"}
-            {isLowMorale && !isCriticalMorale && "Produktywnosc spada"}
-            {isCriticalMorale && "Krytycznie niskie morale!"}
-            {!isHighMorale && !isLowMorale && "Normalna produktywnosc"}
+            {isHighMorale && t("moraleExcellent")}
+            {isLowMorale && !isCriticalMorale && t("moralePoor")}
+            {isCriticalMorale && t("moraleCritical")}
+            {!isHighMorale && !isLowMorale && t("moraleGood")}
           </p>
         </div>
 
         {/* Fixed costs */}
         <div className="bg-slate-900 rounded-lg p-3">
-          <p className="text-slate-400 text-xs uppercase mb-1">Koszty stale</p>
+          <p className="text-slate-400 text-xs uppercase mb-1">{t("fixedCosts")}</p>
           <p className="text-2xl font-bold text-red-400">
-            -${formatMoney(fixedCostsPerSecond)}/s
-          </p>
-          <p className="text-xs text-slate-500 mt-2">
-            {Math.round((fixedCostsPerSecond / baseMoneyPerSecond) * 100) || 0}% produkcji na pensje
+            -${formatMoney(fixedCostsPerSecond)}{t("perSecond")}
           </p>
         </div>
 
         {/* Diversification bonus (Tier 4+) */}
         {currentTier >= 4 && (
           <div className="bg-slate-900 rounded-lg p-3">
-            <p className="text-slate-400 text-xs uppercase mb-1">Dywersyfikacja</p>
+            <p className="text-slate-400 text-xs uppercase mb-1">{t("diversification")}</p>
             <p className={`text-2xl font-bold ${diversificationBonus > 0 ? "text-green-400" : "text-slate-500"}`}>
               +{Math.round(diversificationBonus * 100)}%
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              {Object.values(buildings).filter(c => c > 0).length} unikalnych aktywow
             </p>
           </div>
         )}
@@ -135,14 +101,8 @@ export function EmployeePanel({ pathColor }: { pathColor: string }) {
         style={{ backgroundColor: pathColor }}
       >
         <span className="mr-2">📢</span>
-        Zmotywuj zespol (+5% morale)
+        {t("motivate")}
       </Button>
-
-      {isCriticalMorale && (
-        <p className="text-red-400 text-xs mt-2 text-center animate-pulse">
-          Twoj zespol jest zdemotywowany! Produktywnosc spadla do {moralePercent}%
-        </p>
-      )}
     </div>
   );
 }

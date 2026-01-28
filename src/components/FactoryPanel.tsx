@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/engine";
 import { InfoTooltip } from "./InfoTooltip";
 import { Progress } from "@/components/ui/progress";
+import { useTranslations } from "next-intl";
 
 export function FactoryPanel({ pathColor }: { pathColor: string }) {
+  const t = useTranslations("factory");
   const machineCondition = useGameStore((state) => state.machineCondition);
   const efficiency = useGameStore((state) => state.efficiency);
   const resources = useGameStore((state) => state.resources);
@@ -53,53 +55,17 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
   return (
     <div className="bg-slate-800 rounded-lg p-4 border border-slate-700 mb-4 relative">
       <InfoTooltip
-        title="Zarzadzanie fabryka"
-        content={
-          <>
-            <p>Panel kontrolny Twojej fabryki. Monitoruj kondycje maszyn, efektywnosc i przeplyw surowcow.</p>
-            <p className="mt-2 text-slate-400">Kondycja maszyn (0-100%):</p>
-            <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-              <li><span className="text-green-400">80-100%</span> - pelna wydajnosc</li>
-              <li><span className="text-blue-400">50-80%</span> - -10% wydajnosci</li>
-              <li><span className="text-yellow-400">30-50%</span> - -25% wydajnosci</li>
-              <li><span className="text-red-400">&lt;30%</span> - -50% wydajnosci!</li>
-            </ul>
-            <p className="mt-2 text-slate-400">Efektywnosc (0-150%):</p>
-            <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-              <li>Mnozy cala produkcje</li>
-              <li>Zwiekszana przez: R&D, eventy, kontrakty</li>
-              <li>Zmniejszana przez: awarie, strajki, wypadki</li>
-            </ul>
-            {currentTier >= 3 && (
-              <>
-                <p className="mt-2 text-slate-400">Automatyczna konserwacja (Tier 3+):</p>
-                <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                  <li>Dzial utrzymania naprawia maszyny</li>
-                  <li>Utrzymuje kondycje do 90%</li>
-                </ul>
-              </>
-            )}
-            {currentTier >= 5 && (
-              <>
-                <p className="mt-2 text-slate-400">Wplyw na rynek (Tier 5):</p>
-                <ul className="list-disc list-inside text-slate-400 mt-1 text-xs">
-                  <li>Wysza produkcja = lepsze ceny</li>
-                  <li>Bonus do +50% produkcji</li>
-                  <li>Skaluje sie logarytmicznie</li>
-                </ul>
-              </>
-            )}
-          </>
-        }
+        title={t("tooltipTitle")}
+        content={<p>{t("tooltipDesc")}</p>}
       />
       <h3 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-        <span>🏭</span> Zarzadzanie fabryka
+        <span>🏭</span> {t("title")}
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-3">
         {/* Machine Condition */}
         <div className="bg-slate-900 rounded-lg p-3">
-          <p className="text-slate-400 text-xs uppercase mb-1">Kondycja maszyn</p>
+          <p className="text-slate-400 text-xs uppercase mb-1">{t("machineCondition")}</p>
           <p
             className={`text-2xl font-bold ${
               isCriticalCondition
@@ -118,17 +84,16 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
             className="h-2 mt-2"
           />
           <p className="text-xs text-slate-500 mt-1">
-            {isCriticalCondition && "Krytyczny stan! -50% produkcji"}
-            {isLowCondition && !isCriticalCondition && "Niski stan. -25% produkcji"}
-            {isPoorCondition && !isLowCondition && "Wymaga uwagi. -10% produkcji"}
-            {!isPoorCondition && "Dobry stan"}
-            {hasMaintenanceDept && " (auto-naprawa)"}
+            {isCriticalCondition && t("statusCritical")}
+            {isLowCondition && !isCriticalCondition && t("statusPoor")}
+            {isPoorCondition && !isLowCondition && t("statusAverage")}
+            {!isPoorCondition && t("statusGood")}
           </p>
         </div>
 
         {/* Efficiency */}
         <div className="bg-slate-900 rounded-lg p-3">
-          <p className="text-slate-400 text-xs uppercase mb-1">Efektywnosc</p>
+          <p className="text-slate-400 text-xs uppercase mb-1">{t("efficiency")}</p>
           <p
             className={`text-2xl font-bold ${
               isLowEfficiency
@@ -144,16 +109,11 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
             value={(efficiencyPercent / 150) * 100}
             className="h-2 mt-2"
           />
-          <p className="text-xs text-slate-500 mt-1">
-            {isHighEfficiency && "Bonus produkcji!"}
-            {isLowEfficiency && "Niska efektywnosc"}
-            {!isHighEfficiency && !isLowEfficiency && "Normalna efektywnosc"}
-          </p>
         </div>
 
         {/* Resource Flow */}
         <div className="bg-slate-900 rounded-lg p-3">
-          <p className="text-slate-400 text-xs uppercase mb-1">Przeplyw surowcow</p>
+          <p className="text-slate-400 text-xs uppercase mb-1">{t("resourceFlow")}</p>
           <p
             className={`text-2xl font-bold ${
               resourceBalance > 0
@@ -163,16 +123,11 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
                 : "text-slate-400"
             }`}
           >
-            {resourceBalance > 0 ? "+" : ""}{resourceBalance.toFixed(1)}/s
+            {resourceBalance > 0 ? "+" : ""}{resourceBalance.toFixed(1)}{t("perSecond")}
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Zapas: {formatMoney(resources)} jednostek
+            {formatMoney(resources)}
           </p>
-          {isConsumingResources && resources < Math.abs(resourceBalance) * 30 && (
-            <p className="text-xs text-yellow-400 mt-1">
-              Niski zapas surowcow!
-            </p>
-          )}
         </div>
       </div>
 
@@ -181,12 +136,9 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
         {/* Workers */}
         {hasWorkers && (
           <div className="bg-slate-900 rounded-lg p-3">
-            <p className="text-slate-400 text-xs uppercase mb-1">Pracownicy</p>
+            <p className="text-slate-400 text-xs uppercase mb-1">{t("workers")}</p>
             <p className="text-2xl font-bold text-blue-400">
               {workerCount}
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              {buildings["i2_workers"] || 0} zespolow
             </p>
           </div>
         )}
@@ -194,12 +146,9 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
         {/* Fixed costs */}
         {fixedCostsPerSecond > 0 && (
           <div className="bg-slate-900 rounded-lg p-3">
-            <p className="text-slate-400 text-xs uppercase mb-1">Koszty stale</p>
+            <p className="text-slate-400 text-xs uppercase mb-1">{t("fixedCosts")}</p>
             <p className="text-2xl font-bold text-red-400">
-              -${formatMoney(fixedCostsPerSecond)}/s
-            </p>
-            <p className="text-xs text-slate-500 mt-2">
-              {baseMoneyPerSecond > 0 ? Math.round((fixedCostsPerSecond / baseMoneyPerSecond) * 100) : 0}% produkcji na pensje
+              -${formatMoney(fixedCostsPerSecond)}{t("perSecond")}
             </p>
           </div>
         )}
@@ -207,7 +156,7 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
         {/* Market Influence (Tier 5 only) */}
         {currentTier >= 5 && (
           <div className="bg-slate-900 rounded-lg p-3">
-            <p className="text-slate-400 text-xs uppercase mb-1">Wplyw na rynek</p>
+            <p className="text-slate-400 text-xs uppercase mb-1">{t("marketInfluence")}</p>
             <p className={`text-2xl font-bold ${marketInfluence > 0 ? "text-purple-400" : "text-slate-400"}`}>
               +{Math.round(marketInfluence * 100)}%
             </p>
@@ -215,9 +164,6 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
               value={(marketInfluence / 0.5) * 100}
               className="h-2 mt-2"
             />
-            <p className="text-xs text-slate-500 mt-1">
-              {marketInfluence >= 0.4 ? "Dominacja rynkowa!" : marketInfluence >= 0.2 ? "Znaczacy gracz" : marketInfluence > 0 ? "Rozwijasz wplyw" : "Zwieksz produkcje"}
-            </p>
           </div>
         )}
       </div>
@@ -232,7 +178,7 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
           variant={canRepair ? "default" : "outline"}
         >
           <span className="mr-2">🔧</span>
-          Napraw maszyny (+20%) - ${formatMoney(repairCost)}
+          {t("repairMachines")} - ${formatMoney(repairCost)}
         </Button>
       )}
 
@@ -240,15 +186,9 @@ export function FactoryPanel({ pathColor }: { pathColor: string }) {
         <div className="bg-green-900/30 border border-green-600/50 rounded-lg p-3 text-center">
           <p className="text-green-400 text-sm">
             <span className="mr-2">✅</span>
-            Dzial utrzymania aktywny - automatyczna konserwacja
+            {t("maintenanceDept")}
           </p>
         </div>
-      )}
-
-      {isCriticalCondition && !hasMaintenanceDept && (
-        <p className="text-red-400 text-xs mt-2 text-center animate-pulse">
-          Maszyny w krytycznym stanie! Napraw je natychmiast!
-        </p>
       )}
     </div>
   );

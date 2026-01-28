@@ -55,7 +55,9 @@ export function GameLoop() {
           state.crashesSurvived,
           state.hedgingEnabled,
           // Always update lastPlayedAt during autosaves for reliable offline tracking
-          true
+          true,
+          // Buildings - critical for progress!
+          state.buildings
         );
         lastSaveRef.current = Date.now();
       }
@@ -92,7 +94,9 @@ export function GameLoop() {
           state.marketPhase,
           state.crashesSurvived,
           state.hedgingEnabled,
-          true
+          true,
+          // Buildings - critical for progress!
+          state.buildings
         );
         lastSaveRef.current = Date.now();
       } else {
@@ -125,7 +129,9 @@ export function GameLoop() {
         state.marketPhase,
         state.crashesSurvived,
         state.hedgingEnabled,
-        true
+        true,
+        // Buildings - critical for progress!
+        state.buildings
       );
     };
 

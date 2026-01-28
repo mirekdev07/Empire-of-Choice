@@ -70,7 +70,18 @@ export function SaveSwitcher() {
       state.machineCondition,
       state.completedContractsCount,
       state.completedLongTermCount,
-      state.completedCollaborationsCount
+      state.completedCollaborationsCount,
+      // Finance fields
+      state.aum,
+      state.creditRating,
+      state.leverage,
+      state.marketPhase,
+      state.crashesSurvived,
+      state.hedgingEnabled,
+      // Update lastPlayedAt
+      true,
+      // Buildings
+      state.buildings
     );
 
     // Switch to new save
