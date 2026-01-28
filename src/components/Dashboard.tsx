@@ -87,14 +87,19 @@ export function Dashboard({ initialState }: DashboardProps) {
 
       // If new session and was away for more than 30 seconds, sync offline earnings
       if (isNewSession && secondsAway > 30) {
-        try {
-          const result = await syncOfflineEarnings();
-          if (result.success && result.earnings && result.earnings > 0) {
-            setOfflineEarnings(result.earnings);
-            setShowOfflineModal(true);
+        const result = await syncOfflineEarnings();
+        // Show modal with earnings (even if 0, for debugging)
+        const earnings = result.success ? (result.earnings || 0) : 0;
+        setOfflineEarnings(earnings);
+        setShowOfflineModal(true);
+
+        // Refresh state if sync was successful
+        if (result.success) {
+          const freshState = await getGameState();
+          if (freshState) {
+            initializeFromServer(freshState);
+            return; // Skip the regular state load below
           }
-        } catch (error) {
-          console.error("Failed to sync offline earnings:", error);
         }
       }
 
@@ -123,24 +128,26 @@ export function Dashboard({ initialState }: DashboardProps) {
 
     const handleVisibilityChange = async () => {
       if (document.hidden) {
-        // Tab became hidden - record time
+        // Tab became hidden - record time and save to localStorage
         lastHiddenTime = Date.now();
-      } else {
-        // Tab became visible - check if enough time passed (min 5 seconds)
+        localStorage.setItem("graidle_last_played", lastHiddenTime.toString());
+      } else if (lastHiddenTime > 0) {
+        // Tab became visible - check if enough time passed (min 30 seconds)
         const timeAway = Date.now() - lastHiddenTime;
-        if (lastHiddenTime > 0 && timeAway > 5000) {
+        if (timeAway > 30000) {
           const result = await syncOfflineEarnings();
-          // Show modal if any earnings (> 0)
-          if (result.success && result.earnings && result.earnings > 0) {
-            setOfflineEarnings(result.earnings);
-            setShowOfflineModal(true);
-            // Refresh state from server
-            const freshState = await getGameState();
-            if (freshState) {
-              initializeFromServer(freshState);
-            }
+          // Show modal with earnings (even if 0)
+          const earnings = result.success ? (result.earnings || 0) : 0;
+          setOfflineEarnings(earnings);
+          setShowOfflineModal(true);
+
+          // Refresh state from server
+          const freshState = await getGameState();
+          if (freshState) {
+            initializeFromServer(freshState);
           }
         }
+        lastHiddenTime = 0; // Reset
       }
     };
 
@@ -273,7 +280,7 @@ export function Dashboard({ initialState }: DashboardProps) {
       <GameLoop />
 
       {/* Offline earnings modal */}
-      {showOfflineModal && offlineEarnings !== null && offlineEarnings > 0 && (
+      {showOfflineModal && offlineEarnings !== null && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-8 max-w-md mx-4 text-center border border-slate-700">
             <h2 className="text-2xl font-bold text-white mb-4">{t("welcomeBack")}</h2>
