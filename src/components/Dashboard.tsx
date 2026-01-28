@@ -121,6 +121,13 @@ export function Dashboard({ initialState }: DashboardProps) {
   useEffect(() => {
     const LAST_PLAYED_KEY = "graidle_last_played";
 
+    // Debug: log what we received from server
+    console.log("[Dashboard] initialState from server:", {
+      offlineEarnings: initialState.offlineEarnings,
+      offlineSeconds: initialState.offlineSeconds,
+      money: initialState.money,
+    });
+
     // Update last played time
     localStorage.setItem(LAST_PLAYED_KEY, Date.now().toString());
 
@@ -128,7 +135,9 @@ export function Dashboard({ initialState }: DashboardProps) {
     initializeFromServer(initialState);
 
     // Show offline earnings modal if there were earnings
-    if (initialState.offlineEarnings && initialState.offlineSeconds) {
+    // Check with > 0 to handle undefined/null/0 cases
+    if (initialState.offlineEarnings && initialState.offlineEarnings > 0 && initialState.offlineSeconds && initialState.offlineSeconds > 0) {
+      console.log("[Dashboard] Showing offline earnings modal:", initialState.offlineEarnings);
       setOfflineEarnings({
         earnings: initialState.offlineEarnings,
         seconds: initialState.offlineSeconds,
@@ -158,6 +167,13 @@ export function Dashboard({ initialState }: DashboardProps) {
           const freshState = await getGameState();
           if (freshState) {
             initializeFromServer(freshState);
+            // Show offline earnings modal if there were earnings
+            if (freshState.offlineEarnings && freshState.offlineSeconds) {
+              setOfflineEarnings({
+                earnings: freshState.offlineEarnings,
+                seconds: freshState.offlineSeconds,
+              });
+            }
           }
         }
         lastHiddenTime = 0;
