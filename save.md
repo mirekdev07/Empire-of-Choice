@@ -1,180 +1,56 @@
-# System Zapisywania i Offline Earnings (v2)
+# Offline Earnings System
 
-## Zmiany w architekturze
+## Jak działa
 
-### Przed (problematyczne)
-- Budynki przechowywane w osobnej tabeli `Building` (relacja Prisma)
-- Zapisywanie wymagało wielu operacji upsert
-- `beforeunload` używało async Server Action (niezawodne)
-- Offline earnings obliczane z budynków w bazie (mogły być nieaktualne)
+### 1. Zapisywanie produkcji (podczas gry)
+Przy każdym auto-save (co 15 sekund) oraz przy zamknięciu karty:
+- `GameLoop.tsx` wywołuje `saveGame()` lub `/api/save`
+- Zapisuje `lastProductionPerSecond` = aktualny `moneyPerSecond` z Zustand store
+- Zapisuje `lastPlayedAt` = aktualny timestamp
+- Zapisuje `buildings` jako JSON
 
-### Teraz (zoptymalizowane)
-- Budynki przechowywane jako **JSON** w polu `buildings` tabeli `GameSave`
-- **Atomowy zapis** - wszystko w jednym zapytaniu SQL
-- `beforeunload` używa **fetch z keepalive** do `/api/save`
-- Offline earnings obliczane z **zapisanego snapshotu produkcji** (`lastProductionPerSecond`)
+### 2. Obliczanie przy powrocie
+W `getGameState()` (wywoływane przy ładowaniu strony):
+```
+secondsElapsed = now - lastPlayedAt
 
----
+Jeśli secondsElapsed > 30 && lastProductionPerSecond > 0:
+  cappedSeconds = min(secondsElapsed, 28800)  // max 8h
+  offlineEarnings = lastProductionPerSecond × cappedSeconds × 0.20
 
-## Struktura danych
-
-### GameSave (Prisma)
-```prisma
-model GameSave {
-  // ... inne pola ...
-  buildings               Json       @default("{}")  // Record<string, number>
-  lastProductionPerSecond Float      @default(0)     // Snapshot dla offline
-  lastPlayedAt            DateTime   @default(now()) @db.Timestamptz
-}
+  money += offlineEarnings
+  totalEarnings += offlineEarnings
+  → Zapisuje do bazy
+  → Zwraca offlineEarnings i offlineSeconds do klienta
 ```
 
----
+### 3. Modal
+`Dashboard.tsx` pokazuje modal jeśli `initialState.offlineEarnings > 0`
 
-## Przepływ zapisywania
+## Wymagania do działania
 
-### 1. Auto-save (GameLoop.tsx) - co 15 sekund
+1. **Budynki muszą być zapisane** w polu JSON `buildings` w bazie
+2. **lastProductionPerSecond > 0** - wymaga budynków które produkują
+3. **Czas offline > 30 sekund**
+
+## Formuła
 ```
-GameLoop wykrywa że minęło 15s (SAVE_INTERVAL)
-  ↓
-Wywołuje saveGame() z całym stanem:
-  - money, followers, buildings (JSON)
-  - lastProductionPerSecond = moneyPerSecond (snapshot!)
-  ↓
-saveGame() wykonuje JEDEN update do PostgreSQL
-  ↓
-lastPlayedAt jest aktualizowany (updateLastPlayedAt = true)
+earnings = lastProductionPerSecond × min(sekundy, 28800) × 0.20
 ```
+- 20% normalnej produkcji
+- Max 8 godzin (28800 sekund)
 
-### 2. Zapis przy ukryciu karty (visibilitychange)
-```
-document.hidden = true
-  ↓
-Natychmiast wywołuje saveGame() z pełnym stanem
-```
+## Aktualny problem
 
-### 3. Zapis przy zamknięciu przeglądarki (beforeunload)
-```
-Użytkownik zamyka przeglądarkę/kartę
-  ↓
-fetch("/api/save", { keepalive: true }) ← KLUCZOWE!
-  ↓
-Przeglądarka GWARANTUJE ukończenie requestu nawet po zamknięciu
-  ↓
-/api/save wykonuje atomowy update do bazy
-```
+**W bazie `buildings = {}` i `lastProductionPerSecond = 0`**
 
----
+Prawdopodobne przyczyny:
+1. Migracja z tabeli `Building` do JSON nie przeniosła danych
+2. Auto-save może nie działać (sprawdzić logi Vercela)
 
-## Przepływ offline earnings
+## Pliki
 
-### Przy ładowaniu gry (getGameState)
-```
-getGameState() pobiera save z bazy
-  ↓
-Oblicza: secondsElapsed = now - lastPlayedAt
-  ↓
-Jeśli secondsElapsed > 30 i lastProductionPerSecond > 0:
-  ↓
-  offlineEarnings = lastProductionPerSecond * min(secondsElapsed, 28800) * 0.20
-  ↓
-  Dodaje do money i zapisuje do bazy
-  ↓
-Zwraca zaktualizowany stan
-```
-
-### Formuła offline earnings
-```
-earnings = lastProductionPerSecond × cappedSeconds × 0.20
-
-gdzie:
-- lastProductionPerSecond = snapshot produkcji z ostatniego zapisu
-- cappedSeconds = min(secondsElapsed, 28800)  // max 8 godzin
-- 0.20 = 20% normalnej produkcji
-```
-
----
-
-## Diagram przepływu
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        PRZEGLĄDARKA                              │
-│                                                                  │
-│  ┌──────────────────┐    ┌──────────────────┐                   │
-│  │   Zustand Store  │◄───│    GameLoop      │                   │
-│  │   (stan w RAM)   │    │  (tick + save)   │                   │
-│  └────────┬─────────┘    └────────┬─────────┘                   │
-│           │                       │                              │
-│           │            ┌──────────┴──────────┐                  │
-│           │            │                     │                  │
-│           │      co 15s/visibility    beforeunload              │
-│           │            │                     │                  │
-│           │            ▼                     ▼                  │
-│           │    ┌──────────────┐      ┌──────────────┐          │
-│           │    │  saveGame()  │      │ fetch +      │          │
-│           │    │ Server Action│      │ keepalive    │          │
-│           │    └──────┬───────┘      └──────┬───────┘          │
-└───────────┼───────────┼──────────────────────┼───────────────────┘
-            │           │                      │
-            │           ▼                      ▼
-┌───────────┼───────────────────────────────────────────────────────┐
-│           │                   SERWER                              │
-│           │                                                       │
-│           │           ┌──────────────┐  ┌──────────────┐         │
-│           │           │ Server Action│  │ /api/save    │         │
-│           │           │  saveGame()  │  │ Route Handler│         │
-│           │           └──────┬───────┘  └──────┬───────┘         │
-│           │                  │                 │                  │
-│           │                  └────────┬────────┘                  │
-│           │                           ▼                           │
-│           │                  ┌──────────────────┐                │
-│           │                  │    PostgreSQL    │                │
-│           │                  │  ┌────────────┐  │                │
-│           │                  │  │  GameSave  │  │                │
-│           │                  │  │  - money   │  │                │
-│           │                  │  │  - buildings (JSON)            │
-│           │                  │  │  - lastProductionPerSecond     │
-│           │                  │  │  - lastPlayedAt                │
-│           │                  │  └────────────┘  │                │
-│           │                  └────────┬─────────┘                │
-│           │                           │                          │
-│           │                  ┌────────┴─────────┐                │
-│           │                  │  getGameState()  │                │
-│           │                  │ + offline calc   │                │
-│           │                  └────────┬─────────┘                │
-└───────────┼───────────────────────────┼──────────────────────────┘
-            │                           │
-            ▼                           ▼
-┌───────────────────────────────────────────────────────────────────┐
-│  initializeFromServer() ◄─────────────┘                          │
-│  (aktualizuje Zustand Store)                                      │
-└───────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Kluczowe ulepszenia
-
-1. **Atomowy zapis** - buildings jako JSON, wszystko w jednym UPDATE
-2. **keepalive** - gwarantuje zapis przy zamknięciu przeglądarki
-3. **Snapshot produkcji** - offline earnings nie zależą od budynków w bazie
-4. **Krótszy interwał** - 15s zamiast 30s = max 15s utraconego progresu
-5. **Brak relacji** - usunięta tabela Building, prostszy model
-
----
-
-## Checklist debugowania
-
-1. **Czy `/api/save` działa?**
-   - Sprawdź Network tab w DevTools przy zamykaniu karty
-   - Request powinien mieć status "pending" → "200"
-
-2. **Czy `lastProductionPerSecond` jest zapisywane?**
-   - Sprawdź w bazie po kilku sekundach gry
-   - Powinno być > 0 jeśli masz budynki
-
-3. **Czy `lastPlayedAt` jest aktualne?**
-   - Timestamp w bazie powinien być bliski czasowi zamknięcia
-
-4. **Czy budynki są w JSON?**
-   - Pole `buildings` powinno wyglądać jak: `{"f1_savings": 3, "f1_bonds": 2}`
+- `src/actions/gameActions.ts` - `getGameState()`, `saveGame()`
+- `src/app/api/save/route.ts` - API route dla keepalive save
+- `src/components/GameLoop.tsx` - auto-save co 15s
+- `src/components/Dashboard.tsx` - modal offline earnings

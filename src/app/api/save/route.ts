@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
+      console.log("[API/save] Unauthorized - no session");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -49,6 +50,14 @@ export async function POST(request: NextRequest) {
       completedLongTermCount,
       completedCollaborationsCount,
     } = body;
+
+    // Log what we're saving for debugging
+    console.log("[API/save] Saving:", {
+      saveId: user.currentSaveId,
+      money,
+      buildings: buildings ? Object.keys(buildings).length + " types" : "undefined",
+      lastProductionPerSecond,
+    });
 
     // Atomic update - everything in one query
     await prisma.gameSave.update({
