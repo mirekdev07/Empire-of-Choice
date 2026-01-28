@@ -88,10 +88,11 @@ export function Dashboard({ initialState }: DashboardProps) {
       // If new session and was away for more than 30 seconds, sync offline earnings
       if (isNewSession && secondsAway > 30) {
         const result = await syncOfflineEarnings();
-        // Show modal with earnings (even if 0, for debugging)
-        const earnings = result.success ? (result.earnings || 0) : 0;
-        setOfflineEarnings(earnings);
-        setShowOfflineModal(true);
+        // Only show modal if there are actual earnings
+        if (result.success && result.earnings && result.earnings > 0) {
+          setOfflineEarnings(result.earnings);
+          setShowOfflineModal(true);
+        }
 
         // Refresh state if sync was successful
         if (result.success) {
@@ -136,10 +137,11 @@ export function Dashboard({ initialState }: DashboardProps) {
         const timeAway = Date.now() - lastHiddenTime;
         if (timeAway > 30000) {
           const result = await syncOfflineEarnings();
-          // Show modal with earnings (even if 0)
-          const earnings = result.success ? (result.earnings || 0) : 0;
-          setOfflineEarnings(earnings);
-          setShowOfflineModal(true);
+          // Only show modal if there are actual earnings
+          if (result.success && result.earnings && result.earnings > 0) {
+            setOfflineEarnings(result.earnings);
+            setShowOfflineModal(true);
+          }
 
           // Refresh state from server
           const freshState = await getGameState();
@@ -280,7 +282,7 @@ export function Dashboard({ initialState }: DashboardProps) {
       <GameLoop />
 
       {/* Offline earnings modal */}
-      {showOfflineModal && offlineEarnings !== null && (
+      {showOfflineModal && offlineEarnings !== null && offlineEarnings > 0 && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-8 max-w-md mx-4 text-center border border-slate-700">
             <h2 className="text-2xl font-bold text-white mb-4">{t("welcomeBack")}</h2>
