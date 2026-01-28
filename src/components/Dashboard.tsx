@@ -32,6 +32,11 @@ export function Dashboard({ initialState }: DashboardProps) {
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState(1);
 
+  // Offline earnings button state
+  const [hasOfflineReward, setHasOfflineReward] = useState(false);
+  const [isCollectingOffline, setIsCollectingOffline] = useState(false);
+  const [offlineSecondsAway, setOfflineSecondsAway] = useState(0);
+
   const path = useGameStore((state) => state.path);
   const money = useGameStore((state) => state.money);
   const followers = useGameStore((state) => state.followers);
@@ -82,27 +87,14 @@ export function Dashboard({ initialState }: DashboardProps) {
       const now = Date.now();
       const secondsAway = lastPlayed > 0 ? Math.floor((now - lastPlayed) / 1000) : 0;
 
-      // Update last played time immediately
-      localStorage.setItem(LAST_PLAYED_KEY, now.toString());
-
-      // If new session and was away for more than 30 seconds, sync offline earnings
+      // If new session and was away for more than 30 seconds, show collect button
       if (isNewSession && secondsAway > 30) {
-        const result = await syncOfflineEarnings();
-        // Only show modal if there are actual earnings
-        if (result.success && result.earnings && result.earnings > 0) {
-          setOfflineEarnings(result.earnings);
-          setShowOfflineModal(true);
-        }
-
-        // Refresh state if sync was successful
-        if (result.success) {
-          const freshState = await getGameState();
-          if (freshState) {
-            initializeFromServer(freshState);
-            return; // Skip the regular state load below
-          }
-        }
+        setHasOfflineReward(true);
+        setOfflineSecondsAway(secondsAway);
       }
+
+      // Update last played time
+      localStorage.setItem(LAST_PLAYED_KEY, now.toString());
 
       // Load fresh state from server
       const freshState = await getGameState();
@@ -122,6 +114,26 @@ export function Dashboard({ initialState }: DashboardProps) {
 
     return () => clearInterval(updateInterval);
   }, [initialState, initializeFromServer]);
+
+  // Collect offline earnings
+  const handleCollectOffline = async () => {
+    setIsCollectingOffline(true);
+    try {
+      const result = await syncOfflineEarnings();
+      if (result.success && result.earnings && result.earnings > 0) {
+        setOfflineEarnings(result.earnings);
+        setShowOfflineModal(true);
+        // Refresh state from server
+        const freshState = await getGameState();
+        if (freshState) {
+          initializeFromServer(freshState);
+        }
+      }
+    } finally {
+      setIsCollectingOffline(false);
+      setHasOfflineReward(false);
+    }
+  };
 
   // Handle tab visibility - sync offline earnings when returning to tab
   useEffect(() => {
@@ -281,7 +293,7 @@ export function Dashboard({ initialState }: DashboardProps) {
     <>
       <GameLoop />
 
-      {/* Offline earnings modal */}
+      {/* Offline earnings modal - only for tab switching */}
       {showOfflineModal && offlineEarnings !== null && offlineEarnings > 0 && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-8 max-w-md mx-4 text-center border border-slate-700">
@@ -298,6 +310,27 @@ export function Dashboard({ initialState }: DashboardProps) {
       )}
 
       <div className="p-3 pt-16 md:p-6 md:pt-6 max-w-7xl mx-auto">
+        {/* Collect offline earnings button - for browser close/reopen */}
+        {hasOfflineReward && (
+          <div className="mb-4 p-4 bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border border-yellow-600/50 rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">💰</span>
+              <div>
+                <p className="text-yellow-400 font-semibold">{t("welcomeBack")}</p>
+                <p className="text-slate-400 text-sm">
+                  {Math.floor(offlineSecondsAway / 60)} min offline
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={handleCollectOffline}
+              disabled={isCollectingOffline}
+              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white"
+            >
+              {isCollectingOffline ? t("collecting") : t("collectOffline")}
+            </Button>
+          </div>
+        )}
         {/* DEV: Debug buttons for Media - TODO: remove before release */}
         {path === "MEDIA" && (
           <div className="bg-yellow-900/50 border border-yellow-600 rounded-lg p-2 mb-4 flex items-center gap-2 flex-wrap">

@@ -117,6 +117,8 @@
     "welcomeBack": "Welcome back!",
     "offlineEarnings": "While you were away, you earned:",
     "offlineButton": "Awesome!",
+    "collectOffline": "Collect offline earnings",
+    "collecting": "Collecting...",
     "money": "Money",
     "perSecond": "/s",
     "followers": "Followers",
