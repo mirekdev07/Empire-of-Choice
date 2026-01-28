@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
+import { SessionProvider } from "@/components/SessionProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -40,9 +41,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white`}
         suppressHydrationWarning
       >
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+        <SessionProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+          </NextIntlClientProvider>
+        </SessionProvider>
       </body>
     </html>
   );
