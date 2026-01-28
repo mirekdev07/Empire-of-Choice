@@ -66,22 +66,39 @@ export function Dashboard({ initialState }: DashboardProps) {
   const hedgingEnabled = useGameStore((state) => state.hedgingEnabled);
   const crashesSurvived = useGameStore((state) => state.crashesSurvived);
 
-  // Initialize store
+  // Initialize store and check for offline earnings
   useEffect(() => {
-    const init = async () => {
-      const sessionKey = "graidle_session_active";
-      const isNewSession = !sessionStorage.getItem(sessionKey);
+    const LAST_PLAYED_KEY = "graidle_last_played";
+    const SESSION_KEY = "graidle_session_active";
 
-      if (isNewSession) {
-        sessionStorage.setItem(sessionKey, "true");
-        const result = await syncOfflineEarnings();
-        // Show modal if any earnings (> 0)
-        if (result.success && result.earnings && result.earnings > 0) {
-          setOfflineEarnings(result.earnings);
-          setShowOfflineModal(true);
+    const init = async () => {
+      // Check if this is a new browser session
+      const isNewSession = !sessionStorage.getItem(SESSION_KEY);
+      sessionStorage.setItem(SESSION_KEY, "true");
+
+      // Get last played time from localStorage (persists across browser sessions)
+      const lastPlayedStr = localStorage.getItem(LAST_PLAYED_KEY);
+      const lastPlayed = lastPlayedStr ? parseInt(lastPlayedStr, 10) : 0;
+      const now = Date.now();
+      const secondsAway = lastPlayed > 0 ? Math.floor((now - lastPlayed) / 1000) : 0;
+
+      // Update last played time immediately
+      localStorage.setItem(LAST_PLAYED_KEY, now.toString());
+
+      // If new session and was away for more than 30 seconds, sync offline earnings
+      if (isNewSession && secondsAway > 30) {
+        try {
+          const result = await syncOfflineEarnings();
+          if (result.success && result.earnings && result.earnings > 0) {
+            setOfflineEarnings(result.earnings);
+            setShowOfflineModal(true);
+          }
+        } catch (error) {
+          console.error("Failed to sync offline earnings:", error);
         }
       }
 
+      // Load fresh state from server
       const freshState = await getGameState();
       if (freshState) {
         initializeFromServer(freshState);
@@ -91,6 +108,13 @@ export function Dashboard({ initialState }: DashboardProps) {
     };
 
     init();
+
+    // Update localStorage timestamp periodically (every 10 seconds)
+    const updateInterval = setInterval(() => {
+      localStorage.setItem(LAST_PLAYED_KEY, Date.now().toString());
+    }, 10000);
+
+    return () => clearInterval(updateInterval);
   }, [initialState, initializeFromServer]);
 
   // Handle tab visibility - sync offline earnings when returning to tab
