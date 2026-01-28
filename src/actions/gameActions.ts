@@ -261,21 +261,23 @@ export async function getGameState(): Promise<GameState | null> {
 
   const buildings = (save.buildings as Record<string, number>) || {};
 
-  // Calculate time difference with Math.abs to handle timezone issues
+  // Calculate time difference using lastHeartbeat (NOT lastPlayedAt)
+  // lastHeartbeat is only updated during active gameplay, not on page close
+  // This prevents the race condition where beforeunload saves right before page load
   const now = new Date();
-  const lastSave = new Date(save.lastPlayedAt);
-  const secondsElapsed = Math.floor(Math.abs(now.getTime() - lastSave.getTime()) / 1000);
+  const lastHeartbeat = new Date(save.lastHeartbeat);
+  const secondsElapsed = Math.floor(Math.abs(now.getTime() - lastHeartbeat.getTime()) / 1000);
 
   // Ensure lastProductionPerSecond is a number (Prisma may return Decimal)
   const productionRate = Number(save.lastProductionPerSecond) || 0;
 
   // Debug log for offline earnings calculation
-  console.log("[getGameState] Offline check:", {
+  console.log("[getGameState] Offline check (using heartbeat):", {
     now: now.toISOString(),
-    lastSave: lastSave.toISOString(),
+    lastHeartbeat: lastHeartbeat.toISOString(),
     secondsElapsed,
     productionRate,
-    willCalculate: secondsElapsed > 30 && productionRate > 0,
+    willCalculate: secondsElapsed > 60 && productionRate > 0,
   });
 
   let currentMoney = Number(save.money);
@@ -283,8 +285,8 @@ export async function getGameState(): Promise<GameState | null> {
   let offlineEarningsAmount = 0;
   let offlineSecondsAmount = 0;
 
-  // Apply offline earnings if away for more than 30 seconds
-  if (secondsElapsed > 30 && productionRate > 0) {
+  // Apply offline earnings if away for more than 60 seconds (increased for safety)
+  if (secondsElapsed > 60 && productionRate > 0) {
     // Use saved production rate for reliable offline calculation
     offlineSecondsAmount = Math.min(secondsElapsed, 28800); // Max 8 hours
     offlineEarningsAmount = Math.floor(productionRate * offlineSecondsAmount * 0.20);
@@ -296,13 +298,13 @@ export async function getGameState(): Promise<GameState | null> {
     });
 
     if (offlineEarningsAmount > 0) {
-      // Update database with increment and reset lastPlayedAt
+      // Update database with increment and reset heartbeat
       await prisma.gameSave.update({
         where: { id: save.id },
         data: {
           money: { increment: offlineEarningsAmount },
           totalEarnings: { increment: offlineEarningsAmount },
-          lastPlayedAt: now,
+          lastHeartbeat: now, // Reset heartbeat so we don't double-count
         },
       });
 
@@ -569,6 +571,9 @@ export async function saveGame(
       ...(lastProductionPerSecond !== undefined ? { lastProductionPerSecond } : {}),
       // Update lastPlayedAt when requested
       ...(updateLastPlayedAt ? { lastPlayedAt: new Date() } : {}),
+      // Always update heartbeat during active gameplay (saveGame is called from GameLoop)
+      // This is used for offline earnings calculation
+      lastHeartbeat: new Date(),
     },
   });
 

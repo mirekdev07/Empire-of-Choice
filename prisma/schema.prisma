@@ -61,6 +61,9 @@ model GameSave {
   buildings               Json       @default("{}")
   // Snapshot of production for reliable offline earnings
   lastProductionPerSecond Float      @default(0)
+  // Heartbeat - updated only during active gameplay, NOT on page close
+  // Used for calculating offline earnings (lastPlayedAt is updated on every save)
+  lastHeartbeat           DateTime   @default(now()) @db.Timestamptz
   user                    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

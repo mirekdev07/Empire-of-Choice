@@ -88,6 +88,10 @@ export async function POST(request: NextRequest) {
         completedCollaborationsCount: completedCollaborationsCount ?? undefined,
         // Always update lastPlayedAt on save
         lastPlayedAt: new Date(),
+        // NOTE: We do NOT update lastHeartbeat here!
+        // This endpoint is used by keepalive/beforeunload when page closes.
+        // lastHeartbeat should only be updated during active gameplay (via saveGame Server Action)
+        // This separation allows offline earnings to work correctly.
       },
     });
 
