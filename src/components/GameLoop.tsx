@@ -2,13 +2,14 @@
 
 import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/useGameStore";
-import { saveGame, markLastPlayed } from "@/actions/gameActions";
+import { saveGame } from "@/actions/gameActions";
 
 const SAVE_INTERVAL = 30000; // Save every 30 seconds
 
 export function GameLoop() {
   const lastTimeRef = useRef<number>(performance.now());
   const lastSaveRef = useRef<number>(Date.now());
+  const isTabHiddenRef = useRef<boolean>(false);
 
   const tick = useGameStore((state) => state.tick);
   const isLoaded = useGameStore((state) => state.isLoaded);
@@ -28,7 +29,8 @@ export function GameLoop() {
       // Update game state
       tick(cappedDelta);
 
-      // Auto-save (without updating lastPlayedAt - that's only for offline tracking)
+      // Auto-save - always update lastPlayedAt so offline earnings work on browser close
+      // This means max 30 seconds of "missed" offline time
       if (Date.now() - lastSaveRef.current > SAVE_INTERVAL) {
         const state = useGameStore.getState();
         saveGame(
@@ -52,8 +54,8 @@ export function GameLoop() {
           state.marketPhase,
           state.crashesSurvived,
           state.hedgingEnabled,
-          // Don't update lastPlayedAt during regular autosaves
-          false
+          // Always update lastPlayedAt during autosaves for reliable offline tracking
+          true
         );
         lastSaveRef.current = Date.now();
       }
@@ -63,11 +65,12 @@ export function GameLoop() {
 
     animationFrameId = requestAnimationFrame(gameLoop);
 
-    // Save and update lastPlayedAt when tab becomes hidden (for offline earnings)
+    // Track when tab becomes hidden for offline earnings calculation
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        isTabHiddenRef.current = true;
+        // Immediately save when tab becomes hidden
         const state = useGameStore.getState();
-        // Save game and mark the time for offline earnings calculation
         saveGame(
           state.money,
           state.followers,
@@ -89,16 +92,18 @@ export function GameLoop() {
           state.marketPhase,
           state.crashesSurvived,
           state.hedgingEnabled,
-          // Update lastPlayedAt when tab becomes hidden
           true
         );
         lastSaveRef.current = Date.now();
+      } else {
+        isTabHiddenRef.current = false;
       }
     };
 
-    // Save and update lastPlayedAt on page unload
+    // Use sendBeacon for reliable save on page close
     const handleBeforeUnload = () => {
       const state = useGameStore.getState();
+      // Try regular save first
       saveGame(
         state.money,
         state.followers,
@@ -120,7 +125,6 @@ export function GameLoop() {
         state.marketPhase,
         state.crashesSurvived,
         state.hedgingEnabled,
-        // Update lastPlayedAt when page closes
         true
       );
     };
