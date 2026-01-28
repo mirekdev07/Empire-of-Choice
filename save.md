@@ -14,16 +14,22 @@ W `getGameState()` (src/actions/gameActions.ts:242):
 ```typescript
 noStore(); // Wyłączenie Next.js Data Cache
 
-const now = new Date();
-const lastSave = new Date(save.lastPlayedAt);
-const secondsElapsed = Math.floor((now.getTime() - lastSave.getTime()) / 1000);
+// Raw SQL z NOW() - baza oblicza różnicę czasu
+const saveWithTime = await prisma.$queryRaw`
+  SELECT *,
+  EXTRACT(EPOCH FROM (NOW() - "lastPlayedAt"))::integer as "secondsElapsed"
+  FROM "GameSave"
+  WHERE "id" = ${saveId}
+  LIMIT 1
+`;
 
-if (secondsElapsed > 30 && save.lastProductionPerSecond > 0) {
+const secondsElapsed = Number(save.secondsElapsed) || 0;
+const productionRate = Number(save.lastProductionPerSecond) || 0;
+
+if (secondsElapsed > 30 && productionRate > 0) {
   const cappedSeconds = Math.min(secondsElapsed, 28800); // max 8h
-  const offlineEarnings = Math.floor(lastProductionPerSecond * cappedSeconds * 0.20);
-
-  // Dodaje do money i zapisuje do bazy
-  // Zwraca offlineEarnings i offlineSeconds do klienta
+  const offlineEarnings = Math.floor(productionRate * cappedSeconds * 0.20);
+  // Dodaje do money, zapisuje do bazy, zwraca offlineEarnings
 }
 ```
 
@@ -50,6 +56,8 @@ noStore(); // w komponencie
 ### gameActions.ts
 ```typescript
 noStore(); // na początku getGameState()
+// + raw SQL z NOW() zamiast JS Date
+// + Number() dla wszystkich wartości liczbowych
 ```
 
 ## Stan w bazie (produkcja) - DZIAŁA
@@ -63,29 +71,40 @@ Krystian Proc - Media #1:
 
 **Serwer NIE zwraca `offlineEarnings` do klienta** mimo że:
 - Dane w bazie są poprawne
-- Lokalnie warunek `secondsElapsed > 30` jest spełniony
+- Lokalnie (check-db.mjs) warunek `secondsElapsed > 30` jest spełniony
 - `noStore()` jest wywołane
 - `dynamic = 'force-dynamic'` i `revalidate = 0` są ustawione
+- Raw SQL z `NOW()` jest używane
+- `Number()` jest używane dla wszystkich wartości
 
 Logi klienta pokazują:
 ```
 initialState from server: {
   offlineEarnings: undefined,  // <-- problem
   offlineSeconds: undefined,   // <-- problem
-  money: 281085.89             // <-- stara wartość z bazy, bez dodania offline
+  money: 400590.33             // <-- wartość z bazy BEZ offline earnings
 }
 ```
 
-## Możliwe przyczyny do zbadania
+## Co zostało wypróbowane
 
-1. **Czas serwera Vercela** - może być inny niż czas w bazie Neon
-2. **Cache na poziomie Prisma/PG connection pooling**
-3. **Server Action nie wykonuje się świeżo** mimo noStore()
-4. **Edge runtime vs Node runtime** - różnice w zachowaniu
+1. ❌ `noStore()` w Server Action - nie pomogło
+2. ❌ `noStore()` w page.tsx - nie pomogło
+3. ❌ `dynamic = 'force-dynamic'` - nie pomogło
+4. ❌ `revalidate = 0` - nie pomogło
+5. ❌ Raw SQL z `NOW()` zamiast JS Date - nie pomogło
+6. ❌ `Number()` dla Decimal values - nie pomogło
+
+## Hipotezy do zbadania
+
+1. **Vercel serverless cold start** - może funkcja jest cachowana na poziomie Lambda?
+2. **Connection pooling Neon** - read replica może nie mieć aktualnych danych
+3. **Coś blokuje wykonanie warunku if** - mimo że lokalnie działa
+4. **Problem z serializacją** - Next.js może nie przekazywać wszystkich pól
 
 ## Pliki
 
-- `src/actions/gameActions.ts:242` - `getGameState()` z logiką offline
+- `src/actions/gameActions.ts:242` - `getGameState()` z logiką offline (raw SQL)
 - `src/app/api/save/route.ts` - API route dla keepalive save
 - `src/components/GameLoop.tsx` - auto-save co 15s
 - `src/components/Dashboard.tsx:28` - `OfflineEarningsModal`

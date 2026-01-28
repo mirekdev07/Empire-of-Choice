@@ -47,9 +47,9 @@ export type GameState = {
   prestigeReputationBonus: number;
   prestigeAumBonus: number;
   prestigeRatingBonus: number;
-  // Offline earnings (only set when returning from being away)
-  offlineEarnings?: number;
-  offlineSeconds?: number;
+  // Offline earnings (0 if no earnings, >0 if earned while away)
+  offlineEarnings: number;
+  offlineSeconds: number;
 };
 
 export type SaveInfo = {
@@ -253,65 +253,26 @@ export async function getGameState(): Promise<GameState | null> {
 
   if (!user?.currentSaveId) return null;
 
-  // Use raw SQL to get save data WITH database-calculated time difference
-  // This ensures we use DB server time, not JS server time (avoids timezone/clock issues)
-  const saveWithTime = await prisma.$queryRaw<Array<{
-    id: string;
-    name: string;
-    chosenPath: string;
-    money: number;
-    followers: number;
-    resources: number;
-    reputation: number;
-    efficiency: number;
-    machineCondition: number;
-    currentTier: number;
-    totalEarnings: number;
-    buildings: Record<string, number> | null;
-    lastProductionPerSecond: number;
-    lastPlayedAt: Date;
-    activeContracts: unknown;
-    autoAcceptContracts: boolean;
-    autoAcceptMinReward: number;
-    completedContractsCount: number;
-    completedLongTermCount: number;
-    completedCollaborationsCount: number;
-    aum: number;
-    creditRating: string;
-    leverage: number;
-    marketPhase: string;
-    crashesSurvived: number;
-    hedgingEnabled: boolean;
-    timesPrestiged: number;
-    totalLifetimeEarnings: number;
-    highestTierReached: number;
-    prestigeProductionBonus: number;
-    prestigeMoneyBonus: number;
-    prestigeFollowersBonus: number;
-    prestigeReputationBonus: number;
-    prestigeAumBonus: number;
-    prestigeRatingBonus: number;
-    secondsElapsed: number;
-  }>>`
-    SELECT *,
-    EXTRACT(EPOCH FROM (NOW() - "lastPlayedAt"))::integer as "secondsElapsed"
-    FROM "GameSave"
-    WHERE "id" = ${user.currentSaveId}
-    LIMIT 1
-  `;
+  const save = await prisma.gameSave.findUnique({
+    where: { id: user.currentSaveId },
+  });
 
-  if (!saveWithTime || saveWithTime.length === 0) return null;
+  if (!save) return null;
 
-  const save = saveWithTime[0];
   const buildings = (save.buildings as Record<string, number>) || {};
 
-  // Use database-calculated time difference (more reliable than JS Date)
-  const secondsElapsed = Number(save.secondsElapsed) || 0;
+  // Calculate time difference with Math.abs to handle timezone issues
+  const now = new Date();
+  const lastSave = new Date(save.lastPlayedAt);
+  const secondsElapsed = Math.floor(Math.abs(now.getTime() - lastSave.getTime()) / 1000);
+
   // Ensure lastProductionPerSecond is a number (Prisma may return Decimal)
   const productionRate = Number(save.lastProductionPerSecond) || 0;
 
   // Debug log for offline earnings calculation
-  console.log("[getGameState] Offline check (DB time):", {
+  console.log("[getGameState] Offline check:", {
+    now: now.toISOString(),
+    lastSave: lastSave.toISOString(),
     secondsElapsed,
     productionRate,
     willCalculate: secondsElapsed > 30 && productionRate > 0,
@@ -325,31 +286,28 @@ export async function getGameState(): Promise<GameState | null> {
   // Apply offline earnings if away for more than 30 seconds
   if (secondsElapsed > 30 && productionRate > 0) {
     // Use saved production rate for reliable offline calculation
-    const cappedSeconds = Math.min(secondsElapsed, 28800); // Max 8 hours
-    const offlineMultiplier = 0.20; // 20% of normal production
-    const calculatedEarnings = Math.floor(productionRate * cappedSeconds * offlineMultiplier);
+    offlineSecondsAmount = Math.min(secondsElapsed, 28800); // Max 8 hours
+    offlineEarningsAmount = Math.floor(productionRate * offlineSecondsAmount * 0.20);
 
     console.log("[getGameState] Calculating offline earnings:", {
-      cappedSeconds,
+      offlineSecondsAmount,
       productionRate,
-      calculatedEarnings,
+      offlineEarningsAmount,
     });
 
-    if (calculatedEarnings > 0) {
-      offlineEarningsAmount = calculatedEarnings;
-      offlineSecondsAmount = cappedSeconds;
-      currentMoney += calculatedEarnings;
-      currentTotalEarnings += calculatedEarnings;
-
-      // Update database with new money and reset lastPlayedAt
+    if (offlineEarningsAmount > 0) {
+      // Update database with increment and reset lastPlayedAt
       await prisma.gameSave.update({
         where: { id: save.id },
         data: {
-          money: currentMoney,
-          totalEarnings: currentTotalEarnings,
-          lastPlayedAt: new Date(),
+          money: { increment: offlineEarningsAmount },
+          totalEarnings: { increment: offlineEarningsAmount },
+          lastPlayedAt: now,
         },
       });
+
+      currentMoney += offlineEarningsAmount;
+      currentTotalEarnings += offlineEarningsAmount;
 
       console.log("[getGameState] Offline earnings applied:", {
         offlineEarningsAmount,
@@ -397,9 +355,9 @@ export async function getGameState(): Promise<GameState | null> {
     prestigeReputationBonus: Number(save.prestigeReputationBonus),
     prestigeAumBonus: Number(save.prestigeAumBonus),
     prestigeRatingBonus: Number(save.prestigeRatingBonus),
-    // Offline earnings info (for showing modal)
-    offlineEarnings: offlineEarningsAmount > 0 ? offlineEarningsAmount : undefined,
-    offlineSeconds: offlineSecondsAmount > 0 ? offlineSecondsAmount : undefined,
+    // Offline earnings info (for showing modal) - always return number, not undefined
+    offlineEarnings: offlineEarningsAmount,
+    offlineSeconds: offlineSecondsAmount,
   };
 }
 

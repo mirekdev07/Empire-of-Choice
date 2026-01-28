@@ -134,9 +134,8 @@ export function Dashboard({ initialState }: DashboardProps) {
     // Initialize from server-provided state (already includes offline earnings)
     initializeFromServer(initialState);
 
-    // Show offline earnings modal if there were earnings
-    // Check with > 0 to handle undefined/null/0 cases
-    if (initialState.offlineEarnings && initialState.offlineEarnings > 0 && initialState.offlineSeconds && initialState.offlineSeconds > 0) {
+    // Show offline earnings modal if there were earnings (now always number, not undefined)
+    if (initialState.offlineEarnings > 0) {
       console.log("[Dashboard] Showing offline earnings modal:", initialState.offlineEarnings);
       setOfflineEarnings({
         earnings: initialState.offlineEarnings,
