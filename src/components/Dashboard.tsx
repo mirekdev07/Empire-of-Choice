@@ -134,7 +134,7 @@ export function Dashboard({ initialState }: DashboardProps) {
     setHasOfflineReward(false);
   };
 
-  // Handle tab visibility - sync offline earnings when returning to tab
+  // Handle tab visibility - sync offline earnings silently when returning to tab
   useEffect(() => {
     let lastHiddenTime = 0;
 
@@ -147,12 +147,8 @@ export function Dashboard({ initialState }: DashboardProps) {
         // Tab became visible - check if enough time passed (min 30 seconds)
         const timeAway = Date.now() - lastHiddenTime;
         if (timeAway > 30000) {
-          const result = await syncOfflineEarnings();
-          // Only show modal if there are actual earnings
-          if (result.success && result.earnings && result.earnings > 0) {
-            setOfflineEarnings(result.earnings);
-            setShowOfflineModal(true);
-          }
+          // Silently sync offline earnings (no modal)
+          await syncOfflineEarnings();
 
           // Refresh state from server
           const freshState = await getGameState();
