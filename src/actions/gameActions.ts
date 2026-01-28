@@ -1,5 +1,6 @@
 "use server";
 
+import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCost, getCostForMultiple, calculateOfflineEarnings } from "@/lib/engine";
 import { getBuildingById, PathType, getTierDefinition, getTiersForPath } from "@/config/gamedata";
@@ -239,6 +240,9 @@ export async function getCurrentSaveId(): Promise<string | null> {
  * Automatically calculates and applies offline earnings using saved production rate
  */
 export async function getGameState(): Promise<GameState | null> {
+  // Disable Next.js Data Cache - always fetch fresh data for offline earnings
+  noStore();
+
   const session = await auth();
   if (!session?.user?.id) return null;
 

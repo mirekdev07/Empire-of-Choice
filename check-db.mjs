@@ -1,5 +1,4 @@
 import { config } from 'dotenv';
-// Load production environment
 config({ path: '.env.production.local' });
 
 import { PrismaClient } from '@prisma/client';
@@ -9,55 +8,37 @@ import pg from 'pg';
 const { Pool } = pg;
 
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is not defined");
-}
-
-console.log("Connecting to:", connectionString.replace(/:[^:@]+@/, ':***@'));
-
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
-
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Get all users with their saves
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      gameSaves: {
-        select: {
-          id: true,
-          name: true,
-          money: true,
-          lastPlayedAt: true,
-          lastProductionPerSecond: true,
-          chosenPath: true,
-          buildings: true,
-        }
-      }
-    }
+  const save = await prisma.gameSave.findFirst({
+    where: { name: "Media #1" },
   });
 
-  console.log("\n=== All Users and Saves (PRODUCTION) ===\n");
-  for (const user of users) {
-    console.log(`User: ${user.name || user.email}`);
-    for (const save of user.gameSaves) {
-      const secondsAgo = Math.floor((Date.now() - new Date(save.lastPlayedAt).getTime()) / 1000);
-      const buildingTypes = Object.keys(save.buildings || {}).length;
-      const totalBuildings = Object.values(save.buildings || {}).reduce((a, b) => a + b, 0);
-      console.log(`  Save: ${save.name}
-    Path: ${save.chosenPath}
-    Money: ${save.money.toFixed(2)}
-    lastProductionPerSecond: ${save.lastProductionPerSecond}
-    lastPlayedAt: ${secondsAgo} seconds ago
-    Buildings: ${JSON.stringify(save.buildings)}
-    (${buildingTypes} types, ${totalBuildings} total)
-`);
-    }
-    console.log("");
+  if (!save) {
+    console.log("Save not found");
+    return;
+  }
+
+  const now = new Date();
+  const lastPlayed = new Date(save.lastPlayedAt);
+  const secondsElapsed = Math.floor((now.getTime() - lastPlayed.getTime()) / 1000);
+
+  console.log("=== CURRENT STATE ===");
+  console.log(`Money in DB: ${save.money.toFixed(2)}`);
+  console.log(`lastPlayedAt: ${lastPlayed.toISOString()}`);
+  console.log(`secondsElapsed: ${secondsElapsed}`);
+  console.log(`lastProductionPerSecond: ${save.lastProductionPerSecond}`);
+
+  if (secondsElapsed > 30 && save.lastProductionPerSecond > 0) {
+    const cappedSeconds = Math.min(secondsElapsed, 28800);
+    const offlineEarnings = Math.floor(save.lastProductionPerSecond * cappedSeconds * 0.20);
+    console.log(`\nOFFLINE EARNINGS WOULD BE: +${offlineEarnings}`);
+    console.log(`New money would be: ${(save.money + offlineEarnings).toFixed(2)}`);
+  } else {
+    console.log(`\nNO OFFLINE EARNINGS (need >30s, have ${secondsElapsed}s)`);
   }
 }
 
