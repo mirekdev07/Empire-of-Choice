@@ -233,6 +233,7 @@ export async function getCurrentSaveId(): Promise<string | null> {
 
 /**
  * Get current game state from selected save
+ * Automatically calculates and applies offline earnings
  */
 export async function getGameState(): Promise<GameState | null> {
   const session = await auth();
@@ -257,20 +258,52 @@ export async function getGameState(): Promise<GameState | null> {
     buildings[b.buildingId] = b.count;
   }
 
+  // Calculate and apply offline earnings automatically
+  const now = new Date();
+  const lastSave = save.lastPlayedAt;
+  const secondsElapsed = Math.floor((now.getTime() - lastSave.getTime()) / 1000);
+
+  let currentMoney = save.money;
+  let currentTotalEarnings = save.totalEarnings;
+
+  // Apply offline earnings if away for more than 30 seconds
+  if (secondsElapsed > 30) {
+    const offlineEarnings = calculateOfflineEarnings(
+      save.chosenPath as PathType,
+      buildings,
+      secondsElapsed
+    );
+
+    if (offlineEarnings > 0) {
+      currentMoney += offlineEarnings;
+      currentTotalEarnings += offlineEarnings;
+
+      // Update database with new money and reset lastPlayedAt
+      await prisma.gameSave.update({
+        where: { id: save.id },
+        data: {
+          money: currentMoney,
+          totalEarnings: currentTotalEarnings,
+          lastPlayedAt: now,
+        },
+      });
+    }
+  }
+
   return {
     saveId: save.id,
     saveName: save.name,
-    money: save.money,
+    money: currentMoney,
     followers: save.followers,
     resources: save.resources,
     reputation: save.reputation,
     efficiency: save.efficiency,
     machineCondition: save.machineCondition,
     currentTier: save.currentTier,
-    totalEarnings: save.totalEarnings,
+    totalEarnings: currentTotalEarnings,
     buildings,
     path: save.chosenPath as PathType,
-    lastSaveTime: save.lastPlayedAt,
+    lastSaveTime: now, // Return current time since we just updated it
     // Contract system
     activeContracts: (save.activeContracts as unknown as ActiveContract[]) || [],
     autoAcceptContracts: save.autoAcceptContracts,

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useGameStore } from "@/store/useGameStore";
-import { getGameState, syncOfflineEarnings, upgradeTier, GameState } from "@/actions/gameActions";
+import { getGameState, upgradeTier, GameState } from "@/actions/gameActions";
 import { PATHS, getAvailableBuildings, getBuildingsByTier, getTierDefinition, getNextTier, checkTierRequirements, getTiersForPath, getCreditRatingFromValue } from "@/config/gamedata";
 import { formatMoney } from "@/lib/engine";
 import { BuildingCard } from "./BuildingCard";
@@ -28,14 +28,9 @@ interface DashboardProps {
 export function Dashboard({ initialState }: DashboardProps) {
   const t = useTranslations("dashboard");
   const tReq = useTranslations("requirements");
-  const [offlineEarnings, setOfflineEarnings] = useState<number | null>(null);
-  const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState(1);
 
-  // Offline earnings button state
-  const [hasOfflineReward, setHasOfflineReward] = useState(false);
-  const [offlineSecondsAway, setOfflineSecondsAway] = useState(0);
 
   const path = useGameStore((state) => state.path);
   const money = useGameStore((state) => state.money);
@@ -71,42 +66,15 @@ export function Dashboard({ initialState }: DashboardProps) {
   const hedgingEnabled = useGameStore((state) => state.hedgingEnabled);
   const crashesSurvived = useGameStore((state) => state.crashesSurvived);
 
-  // Initialize store and check for offline earnings
+  // Initialize store - offline earnings are calculated automatically in getGameState()
   useEffect(() => {
     const LAST_PLAYED_KEY = "graidle_last_played";
-    const SESSION_KEY = "graidle_session_active";
 
     const init = async () => {
-      // Check if this is a new browser session
-      const isNewSession = !sessionStorage.getItem(SESSION_KEY);
-      sessionStorage.setItem(SESSION_KEY, "true");
-
-      // Get last played time from localStorage (persists across browser sessions)
-      const lastPlayedStr = localStorage.getItem(LAST_PLAYED_KEY);
-      const lastPlayed = lastPlayedStr ? parseInt(lastPlayedStr, 10) : 0;
-      const now = Date.now();
-      const secondsAway = lastPlayed > 0 ? Math.floor((now - lastPlayed) / 1000) : 0;
-
-      // If new session and was away for more than 30 seconds, calculate offline earnings IMMEDIATELY
-      // This must happen BEFORE GameLoop starts auto-saving (which would reset lastPlayedAt)
-      if (isNewSession && secondsAway > 30) {
-        try {
-          const result = await syncOfflineEarnings();
-          if (result.success && result.earnings && result.earnings > 0) {
-            // Store earnings and show the reward notification
-            setOfflineEarnings(result.earnings);
-            setHasOfflineReward(true);
-            setOfflineSecondsAway(secondsAway);
-          }
-        } catch (error) {
-          console.error("Error calculating offline earnings:", error);
-        }
-      }
-
       // Update last played time
-      localStorage.setItem(LAST_PLAYED_KEY, now.toString());
+      localStorage.setItem(LAST_PLAYED_KEY, Date.now().toString());
 
-      // Load fresh state from server (this includes the updated money from syncOfflineEarnings)
+      // Load fresh state from server (automatically includes offline earnings)
       const freshState = await getGameState();
       if (freshState) {
         initializeFromServer(freshState);
@@ -125,38 +93,24 @@ export function Dashboard({ initialState }: DashboardProps) {
     return () => clearInterval(updateInterval);
   }, [initialState, initializeFromServer]);
 
-  // Collect offline earnings - earnings are already calculated and added at init
-  // This button just shows the reward modal
-  const handleCollectOffline = () => {
-    if (offlineEarnings && offlineEarnings > 0) {
-      setShowOfflineModal(true);
-    }
-    setHasOfflineReward(false);
-  };
-
-  // Handle tab visibility - sync offline earnings silently when returning to tab
+  // Handle tab visibility - refresh state from server when returning to tab
+  // Offline earnings are calculated automatically in getGameState()
   useEffect(() => {
     let lastHiddenTime = 0;
 
     const handleVisibilityChange = async () => {
       if (document.hidden) {
-        // Tab became hidden - record time and save to localStorage
         lastHiddenTime = Date.now();
-        localStorage.setItem("graidle_last_played", lastHiddenTime.toString());
       } else if (lastHiddenTime > 0) {
-        // Tab became visible - check if enough time passed (min 30 seconds)
+        // Tab became visible - refresh state (includes offline earnings calculation)
         const timeAway = Date.now() - lastHiddenTime;
         if (timeAway > 30000) {
-          // Silently sync offline earnings (no modal)
-          await syncOfflineEarnings();
-
-          // Refresh state from server
           const freshState = await getGameState();
           if (freshState) {
             initializeFromServer(freshState);
           }
         }
-        lastHiddenTime = 0; // Reset
+        lastHiddenTime = 0;
       }
     };
 
@@ -287,43 +241,7 @@ export function Dashboard({ initialState }: DashboardProps) {
     <>
       <GameLoop />
 
-      {/* Offline earnings modal - only for tab switching */}
-      {showOfflineModal && offlineEarnings !== null && offlineEarnings > 0 && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-slate-800 rounded-xl p-8 max-w-md mx-4 text-center border border-slate-700">
-            <h2 className="text-2xl font-bold text-white mb-4">{t("welcomeBack")}</h2>
-            <p className="text-slate-400 mb-4">{t("offlineEarnings")}</p>
-            <p className="text-4xl font-bold mb-6" style={{ color: pathInfo.color }}>
-              ${formatMoney(offlineEarnings)}
-            </p>
-            <Button onClick={() => setShowOfflineModal(false)} style={{ backgroundColor: pathInfo.color }}>
-              {t("offlineButton")}
-            </Button>
-          </div>
-        </div>
-      )}
-
       <div className="p-3 pt-16 md:p-6 md:pt-6 max-w-7xl mx-auto">
-        {/* Collect offline earnings button - for browser close/reopen */}
-        {hasOfflineReward && offlineEarnings && offlineEarnings > 0 && (
-          <div className="mb-4 p-4 bg-gradient-to-r from-yellow-900/50 to-orange-900/50 border border-yellow-600/50 rounded-lg flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">💰</span>
-              <div>
-                <p className="text-yellow-400 font-semibold">{t("welcomeBack")}</p>
-                <p className="text-slate-400 text-sm">
-                  {Math.floor(offlineSecondsAway / 60)} min offline - ${formatMoney(offlineEarnings)}
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={handleCollectOffline}
-              className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 text-white"
-            >
-              {t("collectOffline")}
-            </Button>
-          </div>
-        )}
         {/* DEV: Debug buttons for Media - TODO: remove before release */}
         {path === "MEDIA" && (
           <div className="bg-yellow-900/50 border border-yellow-600 rounded-lg p-2 mb-4 flex items-center gap-2 flex-wrap">
