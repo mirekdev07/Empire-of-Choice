@@ -116,31 +116,24 @@ export function Dashboard({ initialState }: DashboardProps) {
   const hedgingEnabled = useGameStore((state) => state.hedgingEnabled);
   const crashesSurvived = useGameStore((state) => state.crashesSurvived);
 
-  // Initialize store - offline earnings are calculated automatically in getGameState()
+  // Initialize store from server-provided state
+  // Offline earnings are already calculated in page.tsx's getGameState() call
   useEffect(() => {
     const LAST_PLAYED_KEY = "graidle_last_played";
 
-    const init = async () => {
-      // Update last played time
-      localStorage.setItem(LAST_PLAYED_KEY, Date.now().toString());
+    // Update last played time
+    localStorage.setItem(LAST_PLAYED_KEY, Date.now().toString());
 
-      // Load fresh state from server (automatically includes offline earnings)
-      const freshState = await getGameState();
-      if (freshState) {
-        initializeFromServer(freshState);
-        // Show offline earnings modal if there were earnings
-        if (freshState.offlineEarnings && freshState.offlineSeconds) {
-          setOfflineEarnings({
-            earnings: freshState.offlineEarnings,
-            seconds: freshState.offlineSeconds,
-          });
-        }
-      } else {
-        initializeFromServer(initialState);
-      }
-    };
+    // Initialize from server-provided state (already includes offline earnings)
+    initializeFromServer(initialState);
 
-    init();
+    // Show offline earnings modal if there were earnings
+    if (initialState.offlineEarnings && initialState.offlineSeconds) {
+      setOfflineEarnings({
+        earnings: initialState.offlineEarnings,
+        seconds: initialState.offlineSeconds,
+      });
+    }
 
     // Update localStorage timestamp periodically (every 10 seconds)
     const updateInterval = setInterval(() => {
