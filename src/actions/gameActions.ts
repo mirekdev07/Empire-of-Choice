@@ -410,7 +410,8 @@ export async function syncOfflineEarnings(): Promise<{
   const lastSave = save.lastPlayedAt;
   const secondsElapsed = Math.floor((now.getTime() - lastSave.getTime()) / 1000);
 
-  if (secondsElapsed < 60) {
+  // Minimum 30 seconds offline to count earnings
+  if (secondsElapsed < 30) {
     return { success: true, earnings: 0, newMoney: save.money };
   }
 

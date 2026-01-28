@@ -114,6 +114,9 @@
     }
   },
   "dashboard": {
+    "welcomeBack": "Willkommen zurück!",
+    "offlineEarnings": "Während deiner Abwesenheit hast du verdient:",
+    "offlineButton": "Super!",
     "money": "Geld",
     "perSecond": "/s",
     "followers": "Follower",

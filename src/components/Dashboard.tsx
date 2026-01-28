@@ -19,12 +19,14 @@ import { SynergyPanel } from "./SynergyPanel";
 import { InfoTooltip } from "./InfoTooltip";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useTranslations } from "next-intl";
 
 interface DashboardProps {
   initialState: GameState;
 }
 
 export function Dashboard({ initialState }: DashboardProps) {
+  const t = useTranslations("dashboard");
   const [offlineEarnings, setOfflineEarnings] = useState<number | null>(null);
   const [showOfflineModal, setShowOfflineModal] = useState(false);
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
@@ -73,7 +75,8 @@ export function Dashboard({ initialState }: DashboardProps) {
       if (isNewSession) {
         sessionStorage.setItem(sessionKey, "true");
         const result = await syncOfflineEarnings();
-        if (result.success && result.earnings && result.earnings > 1) {
+        // Show modal if any earnings (> 0)
+        if (result.success && result.earnings && result.earnings > 0) {
           setOfflineEarnings(result.earnings);
           setShowOfflineModal(true);
         }
@@ -103,7 +106,8 @@ export function Dashboard({ initialState }: DashboardProps) {
         const timeAway = Date.now() - lastHiddenTime;
         if (lastHiddenTime > 0 && timeAway > 5000) {
           const result = await syncOfflineEarnings();
-          if (result.success && result.earnings && result.earnings > 1) {
+          // Show modal if any earnings (> 0)
+          if (result.success && result.earnings && result.earnings > 0) {
             setOfflineEarnings(result.earnings);
             setShowOfflineModal(true);
             // Refresh state from server
@@ -245,16 +249,16 @@ export function Dashboard({ initialState }: DashboardProps) {
       <GameLoop />
 
       {/* Offline earnings modal */}
-      {showOfflineModal && offlineEarnings && (
+      {showOfflineModal && offlineEarnings !== null && offlineEarnings > 0 && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-8 max-w-md mx-4 text-center border border-slate-700">
-            <h2 className="text-2xl font-bold text-white mb-4">Witaj z powrotem!</h2>
-            <p className="text-slate-400 mb-4">Podczas Twojej nieobecnosci zarobiles:</p>
+            <h2 className="text-2xl font-bold text-white mb-4">{t("welcomeBack")}</h2>
+            <p className="text-slate-400 mb-4">{t("offlineEarnings")}</p>
             <p className="text-4xl font-bold mb-6" style={{ color: pathInfo.color }}>
               ${formatMoney(offlineEarnings)}
             </p>
             <Button onClick={() => setShowOfflineModal(false)} style={{ backgroundColor: pathInfo.color }}>
-              Super!
+              {t("offlineButton")}
             </Button>
           </div>
         </div>
