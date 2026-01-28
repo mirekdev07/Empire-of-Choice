@@ -1004,13 +1004,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         id: "f1_savings",
         name: "Konto oszczędnościowe",
         icon: "💰",
-        baseCost: 50,
-        baseProduction: 0.05,
+        baseCost: 25,
+        baseProduction: 0.15,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 10, // Generates small AUM (savings grow)
+        aumPerSecond: 0.5, // Very slow AUM growth (savings grow)
         volatility: "none",
-        costMultiplier: 1.15,
+        costMultiplier: 1.12,
         description: "Bezpieczne ale niski zwrot",
         tier: 1,
       },
@@ -1018,13 +1018,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         id: "f1_bonds",
         name: "Obligacje skarbowe",
         icon: "📜",
-        baseCost: 100,
-        baseProduction: 0.10,
+        baseCost: 50,
+        baseProduction: 0.25,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 5, // Small AUM from bond returns
+        aumPerSecond: 0.3, // Small AUM from bond returns
         volatility: "low",
-        costMultiplier: 1.15,
+        costMultiplier: 1.12,
         description: "Stabilny dochód",
         tier: 1,
       },
@@ -1032,13 +1032,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         id: "f1_etf",
         name: "ETF indeksowy",
         icon: "📊",
-        baseCost: 200,
-        baseProduction: 0.20,
+        baseCost: 100,
+        baseProduction: 0.40,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 20, // ETF grows your portfolio
+        aumPerSecond: 1.0, // ETF grows your portfolio
         volatility: "medium",
-        costMultiplier: 1.15,
+        costMultiplier: 1.12,
         description: "Śledzisz rynek",
         tier: 1,
       },
@@ -1046,13 +1046,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         id: "f1_course",
         name: "Kurs inwestowania",
         icon: "📚",
-        baseCost: 150,
+        baseCost: 75,
         baseProduction: 0,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
         aumPerSecond: 0,
         volatility: "none",
-        costMultiplier: 1.20,
+        costMultiplier: 1.15,
         description: "+5% do wszystkich zysków",
         tier: 1,
       },
@@ -1093,10 +1093,10 @@ export const PATHS: Record<PathType, PathDefinition> = {
         baseProduction: 0.15,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 500, // +500$ AUM per client
+        aumPerSecond: 5, // +5$ AUM per second per client (300$/min)
         volatility: "none",
         costMultiplier: 1.14,
-        description: "+500$ AUM, płaci prowizję",
+        description: "+5$/s AUM, płaci prowizję",
         tier: 2,
       },
       {
@@ -1178,10 +1178,10 @@ export const PATHS: Record<PathType, PathDefinition> = {
         baseProduction: 0.5,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 5000, // +5,000$ AUM per corporate client
+        aumPerSecond: 25, // +25$ AUM/s per corporate client (~1,500$/min)
         volatility: "none",
         costMultiplier: 1.18,
-        description: "+5,000$ AUM",
+        description: "+25$/s AUM",
         tier: 3,
       },
       {
@@ -1263,10 +1263,10 @@ export const PATHS: Record<PathType, PathDefinition> = {
         baseProduction: 2.0,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 50000, // +50,000$ AUM
+        aumPerSecond: 100, // +100$ AUM/s (~6,000$/min)
         volatility: "low",
         costMultiplier: 1.16,
-        description: "+50,000$ AUM, wymaga stabilności",
+        description: "+100$/s AUM, wymaga stabilności",
         tier: 4,
       },
       {
@@ -1291,10 +1291,10 @@ export const PATHS: Record<PathType, PathDefinition> = {
         baseProduction: 2.5,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 10000, // Depozyty
+        aumPerSecond: 50, // +50$ AUM/s depozyty (~3,000$/min)
         volatility: "low",
         costMultiplier: 1.25,
-        description: "Przyjmujesz depozyty",
+        description: "Przyjmujesz depozyty +50$/s AUM",
         tier: 4,
       },
       // ============ TIER 5: Finansowe Imperium ============
@@ -1306,10 +1306,10 @@ export const PATHS: Record<PathType, PathDefinition> = {
         baseProduction: 20,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 500000, // +500,000$ AUM
+        aumPerSecond: 500, // +500$ AUM/s (~30,000$/min)
         volatility: "low",
         costMultiplier: 1.28,
-        description: "Zarządzasz państwowymi pieniędzmi",
+        description: "Zarządzasz państwowymi pieniędzmi +500$/s AUM",
         tier: 5,
       },
       {

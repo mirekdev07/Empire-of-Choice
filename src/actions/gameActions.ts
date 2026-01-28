@@ -484,8 +484,11 @@ export async function saveGame(
     return { success: false, error: "Nie wybrano zapisu gry" };
   }
 
+  const saveId = user.currentSaveId;
+
+  // Update game save fields
   await prisma.gameSave.update({
-    where: { id: user.currentSaveId },
+    where: { id: saveId },
     data: {
       money,
       followers,
@@ -507,12 +510,60 @@ export async function saveGame(
       ...(marketPhase !== undefined ? { marketPhase } : {}),
       ...(crashesSurvived !== undefined ? { crashesSurvived } : {}),
       ...(hedgingEnabled !== undefined ? { hedgingEnabled } : {}),
-      // Buildings - critical for progress!
-      ...(buildings !== undefined ? { buildings } : {}),
       // Only update lastPlayedAt when explicitly requested (tab hidden, page close)
       ...(updateLastPlayedAt ? { lastPlayedAt: new Date() } : {}),
     },
   });
+
+  // Sync buildings to the Building table (buildings are stored as relations, not JSON)
+  if (buildings !== undefined) {
+    // Get current buildings from database
+    const existingBuildings = await prisma.building.findMany({
+      where: { gameSaveId: saveId },
+    });
+
+    const existingMap = new Map(existingBuildings.map(b => [b.buildingId, b]));
+
+    // Upsert each building from the client state
+    const upsertPromises: Promise<unknown>[] = [];
+
+    for (const [buildingId, count] of Object.entries(buildings)) {
+      if (count > 0) {
+        upsertPromises.push(
+          prisma.building.upsert({
+            where: {
+              gameSaveId_buildingId: {
+                gameSaveId: saveId,
+                buildingId: buildingId,
+              },
+            },
+            update: { count },
+            create: {
+              gameSaveId: saveId,
+              buildingId: buildingId,
+              count,
+            },
+          })
+        );
+      } else if (existingMap.has(buildingId)) {
+        // If count is 0 and building exists, delete it
+        upsertPromises.push(
+          prisma.building.delete({
+            where: {
+              gameSaveId_buildingId: {
+                gameSaveId: saveId,
+                buildingId: buildingId,
+              },
+            },
+          })
+        );
+      }
+    }
+
+    if (upsertPromises.length > 0) {
+      await Promise.all(upsertPromises);
+    }
+  }
 
   return { success: true };
 }
