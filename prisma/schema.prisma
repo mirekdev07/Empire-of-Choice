@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  password      String?
+  createdAt     DateTime   @default(now())
+  currentSaveId String?
+  gameSaves     GameSave[]
+}
+
+model GameSave {
+  id                      String     @id @default(cuid())
+  userId                  String
+  name                    String     @default("Nowy zapis")
+  chosenPath              String
+  createdAt               DateTime   @default(now())
+  lastPlayedAt            DateTime   @default(now())
+  money                   Float      @default(100)
+  followers               Float      @default(0)
+  resources               Float      @default(50)   // Surowce dla Industrial
+  reputation              Int        @default(10)
+  efficiency              Float      @default(100)  // Efektywność 0-150% dla Industrial
+  machineCondition        Float      @default(100)  // Kondycja maszyn 0-100% dla Industrial
+  currentTier             Int        @default(1)
+  totalEarnings           Float      @default(0)
+  activeContracts         Json?
+  autoAcceptContracts     Boolean    @default(false)
+  autoAcceptMinReward     Int        @default(0)
+  completedContractsCount Int        @default(0)
+  completedLongTermCount  Int        @default(0)
+  completedCollaborationsCount Int   @default(0)
+  // Finance-specific fields
+  aum                     Float      @default(0)    // Assets Under Management
+  creditRating            String     @default("BBB") // AAA to D
+  leverage                Float      @default(1.0)  // 1x to 20x
+  marketPhase             String     @default("stable") // bull, stable, correction, bear, crash
+  crashesSurvived         Int        @default(0)
+  hedgingEnabled          Boolean    @default(false)
+  // Prestige fields
+  timesPrestiged          Int        @default(0)
+  totalLifetimeEarnings   Float      @default(0)
+  highestTierReached      Int        @default(1)
+  prestigeProductionBonus Float      @default(1.0)
+  prestigeMoneyBonus      Float      @default(0)
+  prestigeFollowersBonus  Float      @default(0)
+  prestigeReputationBonus Int        @default(0)
+  prestigeResourcesBonus  Float      @default(0)
+  prestigeEfficiencyBonus Float      @default(0)
+  prestigeAumBonus        Float      @default(0)    // Finance prestige bonus
+  prestigeRatingBonus     Int        @default(0)    // Finance prestige bonus (rating levels)
+  claimedAchievements     Json       @default("[]") // Array of claimed achievement IDs
+  buildings               Building[]
+  user                    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Building {
+  id         String   @id @default(cuid())
+  gameSaveId String
+  buildingId String
+  count      Int      @default(0)
+  gameSave   GameSave @relation(fields: [gameSaveId], references: [id], onDelete: Cascade)
+
+  @@unique([gameSaveId, buildingId])
+}

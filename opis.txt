@@ -1,0 +1,197 @@
+================================================================================
+PROJEKT: "EMPIRE OF CHOICE" (TYCOON IDLE GAME) - DOCKER EDITION
+AUTOR: GEMINI
+WERSJA: 2.0 (LOCAL-FIRST DEV)
+================================================================================
+
+[1] STOS TECHNOLOGICZNY (THE STACK)
+-----------------------------------
+Podejście "Hybrid Local": Baza w kontenerze, aplikacja lokalnie (dla szybkości).
+
+1. Infrastruktura: Docker & Docker Compose (Baza danych).
+2. Runtime: Node.js (uruchamiany lokalnie na hoście).
+3. Język: TypeScript.
+4. Framework: Next.js 14+ (App Router).
+5. Baza Danych: PostgreSQL (w kontenerze Docker).
+6. GUI Bazy: PgAdmin4 (w kontenerze Docker).
+7. ORM: Prisma.
+8. Auth: NextAuth.js (v5) - idealny do testów lokalnych lub Clerk.
+9. UI: Tailwind CSS + Shadcn/UI.
+
+================================================================================
+
+[2] FAZA 0: KONFIGURACJA ŚRODOWISKA (DOCKER)
+-----------------------------------
+Cel: Postawienie bazy danych bez zaśmiecania systemu operacyjnego.
+
+Krok 0.1: Przygotowanie pliku docker-compose.yml
+- [ ] Stwórz pusty folder projektu `my-tycoon`.
+- [ ] Stwórz w nim plik `docker-compose.yml` o treści:
+
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: tycoon_db
+    restart: always
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: tycoondb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: tycoon_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+volumes:
+  postgres_data:
+
+Krok 0.2: Uruchomienie infrastruktury
+- [ ] W terminalu: `docker-compose up -d`
+- [ ] Sprawdź czy kontenery działają: `docker ps`
+- [ ] (Opcjonalnie) Wejdź na http://localhost:5050 (PgAdmin), zaloguj się i sprawdź, czy możesz połączyć się z serwerem "db".
+
+================================================================================
+
+[3] FAZA 1: INICJALIZACJA PROJEKTU NEXT.JS
+-----------------------------------
+
+Krok 1.1: Setup Aplikacji
+- [ ] W tym samym folderze: `npx create-next-app@latest . --typescript --tailwind --eslint`
+      (Uwaga: kropka na końcu instaluje w bieżącym katalogu).
+- [ ] Zainstaluj shadcn-ui: `npx shadcn-ui@latest init`
+- [ ] Zainstaluj biblioteki: `npm install zustand prisma @prisma/client`
+
+Krok 1.2: Połączenie z bazą Dockerową
+- [ ] Zainicjuj Prismę: `npx prisma init`
+- [ ] Edytuj plik `.env` (powstał w głównym katalogu):
+
+DATABASE_URL="postgresql://devuser:devpassword@localhost:5432/tycoondb?schema=public"
+
+Krok 1.3: Modelowanie Danych (schema.prisma)
+- [ ] Wklej do `prisma/schema.prisma`:
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  // Logika Gry
+  chosenPath    String?  // "INDUSTRIAL", "MEDIA", "FINANCE"
+  money         Float    @default(1000) // Kapitał startowy
+  createdAt     DateTime @default(now())
+  lastSaveTime  DateTime @default(now())
+  
+  buildings     Building[]
+}
+
+model Building {
+  id         String @id @default(cuid())
+  userId     String
+  buildingId String // ID z pliku config np. "mine_v1"
+  count      Int    @default(0)
+  user       User   @relation(fields: [userId], references: [id])
+  @@unique([userId, buildingId])
+}
+
+- [ ] Wykonaj pierwszą migrację (to utworzy tabele w kontenerze):
+      `npx prisma migrate dev --name init`
+
+================================================================================
+
+[4] FAZA 2: KONFIGURACJA I MATEMATYKA (THE BRAIN)
+-----------------------------------
+Nie koduj interfejsu, dopóki nie masz logiki w plikach TS.
+
+Krok 2.1: Plik `src/config/gamedata.ts`
+- [ ] Zdefiniuj stałe gry (to pozwala balansować grę bez dotykania bazy):
+
+export const GAME_DATA = {
+  INDUSTRIAL: {
+    buildings: [
+      { id: 'ind_1', name: 'Garaż', baseCost: 100, baseProd: 1, multiplier: 1.15 },
+      { id: 'ind_2', name: 'Warsztat', baseCost: 500, baseProd: 5, multiplier: 1.15 }
+    ]
+  },
+  MEDIA: { ... },
+  FINANCE: { ... }
+};
+
+Krok 2.2: Silnik `src/lib/engine.ts`
+- [ ] Napisz funkcję obliczającą koszt:
+      `export const getCost = (base, count, mult) => base * Math.pow(mult, count);`
+- [ ] Napisz testowo skrypt `src/test-math.ts` i uruchom go `npx tsx src/test-math.ts`, żeby sprawdzić czy ceny nie rosną za szybko.
+
+================================================================================
+
+[5] FAZA 3: BACKEND API (SERVER ACTIONS)
+-----------------------------------
+
+Krok 3.1: Logika kupowania (Transaction Safety)
+- [ ] Stwórz `src/actions/gameActions.ts`
+- [ ] Funkcja `buyBuilding(buildingId)`:
+      1. Pobiera usera z DB.
+      2. Sprawdza w `gamedata.ts` ile budynek powinien kosztować (na podstawie `user.buildings.count`).
+      3. Sprawdza `if (user.money >= cost)`.
+      4. Robi `prisma.$transaction`: odejmuje kasę, inkrementuje budynek.
+      5. Zwraca zaktualizowany stan usera.
+
+Krok 3.2: Logika Offline (Welcome Back)
+- [ ] Funkcja `syncOfflineEarnings()`:
+      1. `now = new Date()`
+      2. `diffSeconds = (now - user.lastSaveTime) / 1000`
+      3. `earnings = totalProductionPerSec * diffSeconds`
+      4. `user.money += earnings`, `user.lastSaveTime = now`
+
+================================================================================
+
+[6] FAZA 4: FRONTEND & GAME LOOP
+-----------------------------------
+
+Krok 4.1: Store (Zustand)
+- [ ] `src/store/useGameStore.ts`:
+      Trzyma stan gotówki (dla płynnego licznika) i funkcję `addMoney(amount)`.
+
+Krok 4.2: Game Loop Component
+- [ ] Stwórz komponent `<GameLoop />` wstawiany w layout.
+- [ ] Użyj `requestAnimationFrame`.
+- [ ] Co klatkę dodawaj: `(productionPerSec / 60)` do stanu wizualnego.
+- [ ] Co 30 sekund wywołuj Server Action `saveGame()` (opcjonalnie, bo `buyBuilding` też zapisuje).
+
+Krok 4.3: Interfejs Dashboardu
+- [ ] Sidebar z wyborem kategorii.
+- [ ] Grid z kartami budynków (wyświetlaj nazwę, koszt, przycisk "Kup").
+- [ ] Przycisk "Kup" musi być wyszarzony (disabled), jeśli `store.money < cost`.
+
+================================================================================
+
+[7] FAZA 5: MECHANIKI SPECJALNE (SCENARIUSZE)
+-----------------------------------
+
+Krok 5.1: Wybór Ścieżki
+- [ ] Jeśli `user.chosenPath` jest NULL, przekieruj na stronę `/choose-path`.
+- [ ] Po wyborze, zapisz w DB i przekieruj na Dashboard.
+
+Krok 5.2: Unikalne Twist'y
+- [ ] MEDIA: W `<GameLoop />` dodaj logikę, że produkcja spada o 1% co X sekund, chyba że klikniesz przycisk "Post New Content" (resetuje mnożnik).
+- [ ] FINANCE: Dodaj prosty endpoint API, który zwraca losowy "mnożnik rynku" i wyświetlaj go na Dashboardzie.
+
+================================================================================
+
+[8] FAZA 6: DEPLOYMENT (Z DOCKERA DO CHMURY)
+-----------------------------------
+Kiedy będziesz gotowy wyjść z localhost:
+
+1. Baza Danych: Załóż darmowe konto na Neon.tech lub Supabase (dostaniesz Connection String).
+2. Podmień `DATABASE_URL` w pliku `.env` (lub w zmiennych środowiskowych Vercel) na ten nowy z chmury.
+3. Wykonaj `npx prisma db push` (to wyśle strukturę Twojej lokalnej bazy do chmury).
+4. Aplikacja: Zdeployuj na Vercel (połącz z repo GitHub).
+
+================================================================================
