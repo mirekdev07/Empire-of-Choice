@@ -5,12 +5,12 @@
 ### 1. Zapisywanie produkcji (podczas gry)
 Przy każdym auto-save (co 15 sekund) oraz przy zamknięciu karty:
 - `GameLoop.tsx` wywołuje `saveGame()` lub `/api/save`
-- Zapisuje `lastProductionPerSecond` = aktualny `moneyPerSecond` z Zustand store
+- Zapisuje `lastProductionPerSecond` = aktualny `moneyPerSecond`
 - Zapisuje `lastPlayedAt` = aktualny timestamp
 - Zapisuje `buildings` jako JSON
 
 ### 2. Obliczanie przy powrocie
-W `getGameState()` (wywoływane przy ładowaniu strony):
+W `getGameState()` (server-side, wywoływane w `page.tsx`):
 ```
 secondsElapsed = now - lastPlayedAt
 
@@ -25,13 +25,8 @@ Jeśli secondsElapsed > 30 && lastProductionPerSecond > 0:
 ```
 
 ### 3. Modal
-`Dashboard.tsx` pokazuje modal jeśli `initialState.offlineEarnings > 0`
-
-## Wymagania do działania
-
-1. **Budynki muszą być zapisane** w polu JSON `buildings` w bazie
-2. **lastProductionPerSecond > 0** - wymaga budynków które produkują
-3. **Czas offline > 30 sekund**
+`Dashboard.tsx` otrzymuje `initialState` z `page.tsx` (server component).
+Jeśli `initialState.offlineEarnings > 0`, pokazuje modal.
 
 ## Formuła
 ```
@@ -40,17 +35,24 @@ earnings = lastProductionPerSecond × min(sekundy, 28800) × 0.20
 - 20% normalnej produkcji
 - Max 8 godzin (28800 sekund)
 
-## Aktualny problem
+## Stan w bazie (produkcja)
 
-**W bazie `buildings = {}` i `lastProductionPerSecond = 0`**
+Krystian Proc - Media #1:
+- `lastProductionPerSecond: 1098.5` ✓
+- `buildings: 19 types, 221 total` ✓
+- Dane zapisują się poprawnie
 
-Prawdopodobne przyczyny:
-1. Migracja z tabeli `Building` do JSON nie przeniosła danych
-2. Auto-save może nie działać (sprawdzić logi Vercela)
+## Problem
+
+Modal nie wyświetla się mimo że:
+- `lastProductionPerSecond > 0`
+- `buildings` są zapisane
+- Czas offline > 30 sekund
 
 ## Pliki
 
-- `src/actions/gameActions.ts` - `getGameState()`, `saveGame()`
+- `src/actions/gameActions.ts:238` - `getGameState()` oblicza offline earnings
 - `src/app/api/save/route.ts` - API route dla keepalive save
 - `src/components/GameLoop.tsx` - auto-save co 15s
-- `src/components/Dashboard.tsx` - modal offline earnings
+- `src/components/Dashboard.tsx:28` - `OfflineEarningsModal` komponent
+- `src/app/dashboard/page.tsx` - wywołuje `getGameState()` server-side

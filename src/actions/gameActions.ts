@@ -260,8 +260,17 @@ export async function getGameState(): Promise<GameState | null> {
 
   // Calculate and apply offline earnings using saved production snapshot
   const now = new Date();
-  const lastSave = save.lastPlayedAt;
+  const lastSave = new Date(save.lastPlayedAt); // Ensure it's a Date object
   const secondsElapsed = Math.floor((now.getTime() - lastSave.getTime()) / 1000);
+
+  // Debug log for offline earnings calculation
+  console.log("[getGameState] Offline check:", {
+    now: now.toISOString(),
+    lastSave: lastSave.toISOString(),
+    secondsElapsed,
+    lastProductionPerSecond: save.lastProductionPerSecond,
+    willCalculate: secondsElapsed > 30 && save.lastProductionPerSecond > 0,
+  });
 
   let currentMoney = save.money;
   let currentTotalEarnings = save.totalEarnings;

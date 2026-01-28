@@ -4,6 +4,9 @@ import { getGameState } from "@/actions/gameActions";
 import { Dashboard } from "@/components/Dashboard";
 import { Sidebar } from "@/components/Sidebar";
 
+// Force dynamic rendering - nie cachuj, zawsze obliczaj offline earnings świeżo
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const session = await auth();
 
