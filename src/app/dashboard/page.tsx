@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { unstable_noStore as noStore } from "next/cache";
 import { auth } from "@/auth";
 import { getGameState } from "@/actions/gameActions";
 import { Dashboard } from "@/components/Dashboard";
@@ -9,6 +10,9 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function DashboardPage() {
+  // Disable ALL caching for this page
+  noStore();
+
   const session = await auth();
 
   if (!session?.user?.id) {
