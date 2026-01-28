@@ -46,6 +46,9 @@ export type GameState = {
   prestigeReputationBonus: number;
   prestigeAumBonus: number;
   prestigeRatingBonus: number;
+  // Offline earnings (only set when returning from being away)
+  offlineEarnings?: number;
+  offlineSeconds?: number;
 };
 
 export type SaveInfo = {
@@ -262,17 +265,21 @@ export async function getGameState(): Promise<GameState | null> {
 
   let currentMoney = save.money;
   let currentTotalEarnings = save.totalEarnings;
+  let offlineEarningsAmount = 0;
+  let offlineSecondsAmount = 0;
 
   // Apply offline earnings if away for more than 30 seconds
   if (secondsElapsed > 30 && save.lastProductionPerSecond > 0) {
     // Use saved production rate for reliable offline calculation
     const cappedSeconds = Math.min(secondsElapsed, 28800); // Max 8 hours
     const offlineMultiplier = 0.20; // 20% of normal production
-    const offlineEarnings = Math.floor(save.lastProductionPerSecond * cappedSeconds * offlineMultiplier);
+    const calculatedEarnings = Math.floor(save.lastProductionPerSecond * cappedSeconds * offlineMultiplier);
 
-    if (offlineEarnings > 0) {
-      currentMoney += offlineEarnings;
-      currentTotalEarnings += offlineEarnings;
+    if (calculatedEarnings > 0) {
+      offlineEarningsAmount = calculatedEarnings;
+      offlineSecondsAmount = cappedSeconds;
+      currentMoney += calculatedEarnings;
+      currentTotalEarnings += calculatedEarnings;
 
       // Update database with new money and reset lastPlayedAt
       await prisma.gameSave.update({
@@ -324,6 +331,9 @@ export async function getGameState(): Promise<GameState | null> {
     prestigeReputationBonus: save.prestigeReputationBonus,
     prestigeAumBonus: save.prestigeAumBonus,
     prestigeRatingBonus: save.prestigeRatingBonus,
+    // Offline earnings info (for showing modal)
+    offlineEarnings: offlineEarningsAmount > 0 ? offlineEarningsAmount : undefined,
+    offlineSeconds: offlineSecondsAmount > 0 ? offlineSecondsAmount : undefined,
   };
 }
 

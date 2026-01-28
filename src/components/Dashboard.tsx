@@ -25,11 +25,61 @@ interface DashboardProps {
   initialState: GameState;
 }
 
+// Offline earnings modal component
+function OfflineEarningsModal({
+  earnings,
+  seconds,
+  onClose,
+}: {
+  earnings: number;
+  seconds: number;
+  onClose: () => void;
+}) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  let timeText = "";
+  if (hours > 0) {
+    timeText = `${hours}h ${minutes}min`;
+  } else if (minutes > 0) {
+    timeText = `${minutes} min`;
+  } else {
+    timeText = `${seconds} sek`;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-600 shadow-2xl">
+        <div className="text-center">
+          <div className="text-5xl mb-4">💰</div>
+          <h2 className="text-xl font-bold text-white mb-2">Witaj z powrotem!</h2>
+          <p className="text-slate-400 mb-4">
+            Podczas Twojej nieobecnosci ({timeText}) zarobiles:
+          </p>
+          <p className="text-3xl font-bold text-green-400 mb-6">
+            +${formatMoney(earnings)}
+          </p>
+          <p className="text-xs text-slate-500 mb-4">
+            (20% normalnej produkcji, max 8h)
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+          >
+            Super!
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Dashboard({ initialState }: DashboardProps) {
   const t = useTranslations("dashboard");
   const tReq = useTranslations("requirements");
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState(1);
+  const [offlineEarnings, setOfflineEarnings] = useState<{ earnings: number; seconds: number } | null>(null);
 
 
   const path = useGameStore((state) => state.path);
@@ -78,6 +128,13 @@ export function Dashboard({ initialState }: DashboardProps) {
       const freshState = await getGameState();
       if (freshState) {
         initializeFromServer(freshState);
+        // Show offline earnings modal if there were earnings
+        if (freshState.offlineEarnings && freshState.offlineSeconds) {
+          setOfflineEarnings({
+            earnings: freshState.offlineEarnings,
+            seconds: freshState.offlineSeconds,
+          });
+        }
       } else {
         initializeFromServer(initialState);
       }
@@ -240,6 +297,15 @@ export function Dashboard({ initialState }: DashboardProps) {
   return (
     <>
       <GameLoop />
+
+      {/* Offline earnings modal */}
+      {offlineEarnings && (
+        <OfflineEarningsModal
+          earnings={offlineEarnings.earnings}
+          seconds={offlineEarnings.seconds}
+          onClose={() => setOfflineEarnings(null)}
+        />
+      )}
 
       <div className="p-3 pt-16 md:p-6 md:pt-6 max-w-7xl mx-auto">
         {/* DEV: Debug buttons for Media - TODO: remove before release */}
