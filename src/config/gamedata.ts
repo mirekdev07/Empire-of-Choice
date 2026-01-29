@@ -46,20 +46,19 @@ export interface TierDefinition {
 export const INDUSTRIAL_TIERS: TierDefinition[] = [
   {
     id: 1,
-    name: "Mały Warsztat",
-    description: "Zaczynasz w garażu z podstawowymi narzędziami",
+    name: "Small Workshop",
+    description: "You start in a garage with basic tools",
     requirements: {},
     maxBuildingCount: 10,
   },
   {
     id: 2,
-    name: "Mała Fabryka",
-    description: "Przenosisz się do prawdziwego budynku z pracownikami",
+    name: "Small Factory",
+    description: "You move to a real building with employees",
     requirements: {
       totalEarnings: 5000,
-      resources: 500, // Zgromadź 500 jednostek surowców
-      efficiency: 60, // Utrzymaj efektywność powyżej 60%
-      // Need 5 workshops OR 5 tool sets
+      resources: 500,
+      efficiency: 60,
       buildingsAny: [
         { id: "i1_workshop", count: 5 },
         { id: "i1_tools", count: 5 },
@@ -69,13 +68,12 @@ export const INDUSTRIAL_TIERS: TierDefinition[] = [
   },
   {
     id: 3,
-    name: "Średnia Fabryka",
-    description: "Masz rozpoznawalną markę. Automatyzacja staje się kluczowa",
+    name: "Medium Factory",
+    description: "You have a recognized brand. Automation becomes key",
     requirements: {
       totalEarnings: 50000,
-      resources: 2000, // Posiadaj 2000 jednostek surowców
-      efficiency: 70, // Efektywność minimum 70%
-      // Need 3 machines OR 5 worker teams
+      resources: 2000,
+      efficiency: 70,
       buildingsAny: [
         { id: "i2_machine", count: 3 },
         { id: "i2_workers", count: 5 },
@@ -85,13 +83,12 @@ export const INDUSTRIAL_TIERS: TierDefinition[] = [
   },
   {
     id: 4,
-    name: "Duża Korporacja",
-    description: "Jesteś graczem na rynku krajowym. Rząd się tobą interesuje",
+    name: "Large Corporation",
+    description: "You're a player in the national market. The government takes notice",
     requirements: {
       totalEarnings: 500000,
-      resources: 10000, // Posiadaj 10000 jednostek surowców
-      efficiency: 80, // Efektywność minimum 80%
-      // Need 2 assembly lines
+      resources: 10000,
+      efficiency: 80,
       buildingsAll: [
         { id: "i3_assembly", count: 2 },
       ],
@@ -100,13 +97,12 @@ export const INDUSTRIAL_TIERS: TierDefinition[] = [
   },
   {
     id: 5,
-    name: "Imperium Przemysłowe",
-    description: "Jesteś międzynarodowym gigantem. Twoje decyzje wpływają na gospodarkę",
+    name: "Industrial Empire",
+    description: "You're an international giant. Your decisions affect the economy",
     requirements: {
       totalEarnings: 5000000,
-      resources: 100000, // Posiadaj 100000 jednostek surowców
-      efficiency: 90, // Efektywność minimum 90%
-      // Need production plant AND own mine
+      resources: 100000,
+      efficiency: 90,
       buildingsAll: [
         { id: "i4_plant", count: 1 },
         { id: "i4_mine", count: 1 },
@@ -123,19 +119,18 @@ export const INDUSTRIAL_TIERS: TierDefinition[] = [
 export const MEDIA_TIERS: TierDefinition[] = [
   {
     id: 1,
-    name: "Początkujący Twórca",
-    description: "Zaczynasz w swoim pokoju z laptopem i marzeniami",
-    requirements: {}, // No requirements for tier 1
+    name: "Beginner Creator",
+    description: "You start in your room with a laptop and dreams",
+    requirements: {},
     maxBuildingCount: 10,
   },
   {
     id: 2,
-    name: "Rozpoznawalny Twórca",
-    description: "Ludzie zaczynają Cię rozpoznawać",
+    name: "Recognized Creator",
+    description: "People start to recognize you",
     requirements: {
       totalEarnings: 5000,
       followers: 1000,
-      // Need 5 blogs OR 5 social media accounts
       buildingsAny: [
         { id: "m1_blog", count: 5 },
         { id: "m1_social", count: 5 },
@@ -145,18 +140,16 @@ export const MEDIA_TIERS: TierDefinition[] = [
   },
   {
     id: 3,
-    name: "Profesjonalista",
-    description: "Czas zatrudnić ludzi i założyć agencję",
+    name: "Professional",
+    description: "Time to hire people and start an agency",
     requirements: {
       totalEarnings: 50000,
       followers: 10000,
       reputation: 40,
-      // Need 3 YouTube channels OR 5 podcasts
       buildingsAny: [
         { id: "m2_youtube", count: 3 },
         { id: "m2_podcast", count: 5 },
       ],
-      // Need to complete at least 1 sponsor contract
       completedContracts: 1,
     },
     maxBuildingCount: 20,
@@ -164,35 +157,31 @@ export const MEDIA_TIERS: TierDefinition[] = [
   {
     id: 4,
     name: "Influencer",
-    description: "Jesteś kimś w branży. Marki same do Ciebie przychodzą",
+    description: "You're somebody in the industry. Brands come to you",
     requirements: {
       totalEarnings: 500000,
       followers: 100000,
       reputation: 60,
-      // Need at least 5 employees (editor, writer, or manager)
       buildingsAny: [
         { id: "m3_editor", count: 5 },
         { id: "m3_writer", count: 5 },
         { id: "m3_manager", count: 5 },
       ],
-      // Need 3 long-term contracts completed
       completedLongTermContracts: 3,
     },
     maxBuildingCount: 25,
   },
   {
     id: 5,
-    name: "Imperium Medialne",
-    description: "Jesteś potentatem. Twoje decyzje wpływają na całą branżę",
+    name: "Media Empire",
+    description: "You're a mogul. Your decisions affect the entire industry",
     requirements: {
       totalEarnings: 5000000,
       followers: 1000000,
       reputation: 80,
-      // Must have a production studio
       buildingsAll: [
         { id: "m4_production", count: 1 },
       ],
-      // Must survive 3 scandals
       scandalsSurvived: 3,
     },
     maxBuildingCount: 50,
@@ -206,32 +195,31 @@ export const MEDIA_TIERS: TierDefinition[] = [
 export const FINANCE_TIERS: TierDefinition[] = [
   {
     id: 1,
-    name: "Początkujący Inwestor",
-    description: "Zaczynasz z własnymi oszczędnościami. Uczysz się podstaw rynku",
+    name: "Beginner Investor",
+    description: "You start with your own savings. Learning market basics",
     requirements: {},
     maxBuildingCount: 10,
   },
   {
     id: 2,
-    name: "Trader Indywidualny",
-    description: "Zaczynasz aktywnie handlować. Pierwsi klienci powierzają Ci pieniądze",
+    name: "Individual Trader",
+    description: "You start actively trading. First clients trust you with money",
     requirements: {
       totalEarnings: 5000,
-      aum: 1000, // Posiadaj 1,000$ w kapitale (AUM)
-      minRating: "BBB", // Utrzymaj rating BBB lub wyższy
-      diversification: 3, // Posiadaj min. 3 różne aktywa
+      aum: 1000,
+      minRating: "BBB",
+      diversification: 3,
     },
     maxBuildingCount: 15,
   },
   {
     id: 3,
-    name: "Zarządzający Funduszem",
-    description: "Zakładasz własny fundusz inwestycyjny. Instytucje zaczynają Ci ufać",
+    name: "Fund Manager",
+    description: "You start your own investment fund. Institutions begin to trust you",
     requirements: {
       totalEarnings: 50000,
-      aum: 10000, // Posiadaj 10,000$ w kapitale (AUM)
-      minRating: "A", // Utrzymaj rating A lub wyższy
-      // Need 5 individual clients
+      aum: 10000,
+      minRating: "A",
       buildingsAny: [
         { id: "f2_client", count: 5 },
       ],
@@ -240,14 +228,13 @@ export const FINANCE_TIERS: TierDefinition[] = [
   },
   {
     id: 4,
-    name: "Instytucja Finansowa",
-    description: "Jesteś poważnym graczem na rynku. Fundusze emerytalne powierzają Ci miliony",
+    name: "Financial Institution",
+    description: "You're a serious player. Pension funds entrust you with millions",
     requirements: {
       totalEarnings: 500000,
-      aum: 100000, // Posiadaj 100,000$ w kapitale (AUM)
-      minRating: "AA", // Utrzymaj rating AA lub wyższy
-      diversification: 5, // Dywersyfikacja 5+ klas aktywów
-      // Need 3 funds or real estate
+      aum: 100000,
+      minRating: "AA",
+      diversification: 5,
       buildingsAny: [
         { id: "f3_fund", count: 3 },
         { id: "f3_realestate", count: 3 },
@@ -257,15 +244,14 @@ export const FINANCE_TIERS: TierDefinition[] = [
   },
   {
     id: 5,
-    name: "Finansowe Imperium",
-    description: "Jesteś jednym z najpotężniejszych graczy na światowych rynkach",
+    name: "Financial Empire",
+    description: "You're one of the most powerful players in global markets",
     requirements: {
       totalEarnings: 5000000,
-      aum: 1000000, // Posiadaj 1,000,000$ w kapitale (AUM)
-      minRating: "AAA", // Utrzymaj rating AAA
-      diversification: 8, // Dywersyfikacja 8+ klas aktywów
-      crashesSurvived: 2, // Przetrwaj 2 krachy rynkowe
-      // Must have hedge fund AND private equity
+      aum: 1000000,
+      minRating: "AAA",
+      diversification: 8,
+      crashesSurvived: 2,
       buildingsAll: [
         { id: "f4_hedge", count: 1 },
         { id: "f4_pe", count: 1 },
@@ -308,29 +294,29 @@ export interface PathDefinition {
 export const PATHS: Record<PathType, PathDefinition> = {
   INDUSTRIAL: {
     id: "INDUSTRIAL",
-    name: "Przemysł",
-    description: "Produkcja fizyczna, zarządzanie łańcuchem dostaw i automatyzacja.",
+    name: "Industrial",
+    description: "Physical production, supply chain management and automation.",
     color: "#f97316",
     icon: "factory",
     buildings: [
-      // ============ TIER 1: Mały Warsztat ============
+      // ============ TIER 1: Small Workshop ============
       {
         id: "i1_workshop",
-        name: "Warsztat",
+        name: "Workshop",
         icon: "🔧",
         baseCost: 50,
         baseProduction: 0.1,
         followersPerSecond: 0,
-        resourcesPerSecond: -0.05, // Zużywa surowce
+        resourcesPerSecond: -0.05,
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.15,
-        description: "Podstawowa produkcja ręczna",
+        description: "Basic manual production",
         tier: 1,
       },
       {
         id: "i1_tools",
-        name: "Zestaw narzędzi",
+        name: "Tool Set",
         icon: "🛠️",
         baseCost: 100,
         baseProduction: 0.2,
@@ -339,41 +325,41 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.15,
-        description: "Lepsze narzędzia = szybsza praca",
+        description: "Better tools = faster work",
         tier: 1,
       },
       {
         id: "i1_storage",
-        name: "Mały magazyn",
+        name: "Small Storage",
         icon: "📦",
         baseCost: 200,
         baseProduction: 0.15,
         followersPerSecond: 0,
-        resourcesPerSecond: 0, // Nie zużywa surowców
+        resourcesPerSecond: 0,
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.15,
-        description: "Przechowywanie gotowych produktów",
+        description: "Store finished products",
         tier: 1,
       },
       {
         id: "i1_supplier",
-        name: "Lokalny dostawca",
+        name: "Local Supplier",
         icon: "🚚",
         baseCost: 300,
         baseProduction: 0,
         followersPerSecond: 0,
-        resourcesPerSecond: 0.5, // Dostarcza surowce
+        resourcesPerSecond: 0.5,
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.18,
-        description: "Dostarcza surowce do warsztatu",
+        description: "Delivers resources to workshop",
         tier: 1,
       },
-      // ============ TIER 2: Mała Fabryka ============
+      // ============ TIER 2: Small Factory ============
       {
         id: "i2_machine",
-        name: "Maszyna produkcyjna",
+        name: "Production Machine",
         icon: "⚙️",
         baseCost: 1500,
         baseProduction: 2.5,
@@ -382,12 +368,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Pierwsza prawdziwa maszyna",
+        description: "Your first real machine",
         tier: 2,
       },
       {
         id: "i2_workers",
-        name: "Zespół pracowników",
+        name: "Worker Team",
         icon: "👷",
         baseCost: 2000,
         baseProduction: 3.0,
@@ -396,12 +382,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "5 pracowników produkcyjnych",
+        description: "5 production workers",
         tier: 2,
       },
       {
         id: "i2_forklift",
-        name: "Wózek widłowy",
+        name: "Forklift",
         icon: "🚜",
         baseCost: 1000,
         baseProduction: 1.5,
@@ -410,12 +396,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Szybszy transport wewnętrzny",
+        description: "Faster internal transport",
         tier: 2,
       },
       {
         id: "i2_wholesale",
-        name: "Hurtownia surowców",
+        name: "Resource Wholesale",
         icon: "🏪",
         baseCost: 3000,
         baseProduction: 0,
@@ -424,12 +410,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.16,
-        description: "Tańsze surowce hurtowo",
+        description: "Cheaper bulk resources",
         tier: 2,
       },
       {
         id: "i2_quality",
-        name: "Kontrola jakości",
+        name: "Quality Control",
         icon: "✅",
         baseCost: 2500,
         baseProduction: 1.0,
@@ -438,13 +424,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "+5% efektywności",
+        description: "+5% efficiency",
         tier: 2,
       },
-      // ============ TIER 3: Średnia Fabryka ============
+      // ============ TIER 3: Medium Factory ============
       {
         id: "i3_assembly",
-        name: "Linia montażowa",
+        name: "Assembly Line",
         icon: "🔄",
         baseCost: 15000,
         baseProduction: 15,
@@ -453,12 +439,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.12,
-        description: "Zautomatyzowany montaż",
+        description: "Automated assembly",
         tier: 3,
       },
       {
         id: "i3_robot",
-        name: "Robot przemysłowy",
+        name: "Industrial Robot",
         icon: "🤖",
         baseCost: 25000,
         baseProduction: 20,
@@ -467,12 +453,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Nie wymaga pensji",
+        description: "No salary required",
         tier: 3,
       },
       {
         id: "i3_warehouse",
-        name: "Duży magazyn",
+        name: "Large Warehouse",
         icon: "🏭",
         baseCost: 10000,
         baseProduction: 5,
@@ -481,12 +467,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.12,
-        description: "Bufor surowców",
+        description: "Resource buffer",
         tier: 3,
       },
       {
         id: "i3_import",
-        name: "Kanał importowy",
+        name: "Import Channel",
         icon: "🚢",
         baseCost: 20000,
         baseProduction: 0,
@@ -495,12 +481,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.16,
-        description: "Tanie surowce z zagranicy",
+        description: "Cheap resources from abroad",
         tier: 3,
       },
       {
         id: "i3_maintenance",
-        name: "Dział utrzymania",
+        name: "Maintenance Dept.",
         icon: "🔩",
         baseCost: 12000,
         baseProduction: 0,
@@ -509,12 +495,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Automatyczna konserwacja maszyn",
+        description: "Automatic machine maintenance",
         tier: 3,
       },
       {
         id: "i3_training",
-        name: "Centrum szkoleniowe",
+        name: "Training Center",
         icon: "🎓",
         baseCost: 18000,
         baseProduction: 8,
@@ -523,13 +509,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "+10% efektywności",
+        description: "+10% efficiency",
         tier: 3,
       },
-      // ============ TIER 4: Duża Korporacja ============
+      // ============ TIER 4: Large Corporation ============
       {
         id: "i4_plant",
-        name: "Zakład produkcyjny",
+        name: "Production Plant",
         icon: "🏗️",
         baseCost: 150000,
         baseProduction: 80,
@@ -538,12 +524,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.18,
-        description: "Cały kompleks fabryk",
+        description: "Entire factory complex",
         tier: 4,
       },
       {
         id: "i4_rnd",
-        name: "Dział R&D",
+        name: "R&D Department",
         icon: "🔬",
         baseCost: 100000,
         baseProduction: 30,
@@ -552,12 +538,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.16,
-        description: "+15% efektywności, nowe technologie",
+        description: "+15% efficiency, new tech",
         tier: 4,
       },
       {
         id: "i4_logistics",
-        name: "Centrum logistyczne",
+        name: "Logistics Center",
         icon: "📊",
         baseCost: 80000,
         baseProduction: 40,
@@ -566,12 +552,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Optymalizacja dostaw",
+        description: "Delivery optimization",
         tier: 4,
       },
       {
         id: "i4_mine",
-        name: "Własna kopalnia",
+        name: "Own Mine",
         icon: "⛏️",
         baseCost: 200000,
         baseProduction: 10,
@@ -580,12 +566,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.20,
-        description: "Niezależność surowcowa",
+        description: "Resource independence",
         tier: 4,
       },
       {
         id: "i4_green",
-        name: "Zielona energia",
+        name: "Green Energy",
         icon: "🌱",
         baseCost: 120000,
         baseProduction: 25,
@@ -594,12 +580,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.16,
-        description: "-50% kosztów energii",
+        description: "-50% energy costs",
         tier: 4,
       },
       {
         id: "i4_contract",
-        name: "Dział kontraktów",
+        name: "Contracts Dept.",
         icon: "📋",
         baseCost: 75000,
         baseProduction: 20,
@@ -608,13 +594,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Lepsze warunki umów",
+        description: "Better contract terms",
         tier: 4,
       },
-      // ============ TIER 5: Imperium Przemysłowe ============
+      // ============ TIER 5: Industrial Empire ============
       {
         id: "i5_megafactory",
-        name: "Megafabryka",
+        name: "Mega Factory",
         icon: "🏭",
         baseCost: 2000000,
         baseProduction: 500,
@@ -623,12 +609,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.22,
-        description: "Największy zakład w kraju",
+        description: "Largest plant in the country",
         tier: 5,
       },
       {
         id: "i5_global",
-        name: "Sieć globalna",
+        name: "Global Network",
         icon: "🌍",
         baseCost: 5000000,
         baseProduction: 1000,
@@ -637,12 +623,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.25,
-        description: "Fabryki na całym świecie",
+        description: "Factories worldwide",
         tier: 5,
       },
       {
         id: "i5_automation",
-        name: "Pełna automatyzacja",
+        name: "Full Automation",
         icon: "🤖",
         baseCost: 3000000,
         baseProduction: 800,
@@ -651,12 +637,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.24,
-        description: "Fabryka bez ludzi",
+        description: "Factory without people",
         tier: 5,
       },
       {
         id: "i5_monopoly",
-        name: "Monopol surowcowy",
+        name: "Resource Monopoly",
         icon: "💎",
         baseCost: 10000000,
         baseProduction: 200,
@@ -665,12 +651,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.28,
-        description: "Kontrolujesz rynek surowców",
+        description: "You control the resource market",
         tier: 5,
       },
       {
         id: "i5_conglomerate",
-        name: "Konglomerat",
+        name: "Conglomerate",
         icon: "👑",
         baseCost: 20000000,
         baseProduction: 2000,
@@ -679,22 +665,22 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.30,
-        description: "Wszystko w jednym",
+        description: "Everything in one",
         tier: 5,
       },
     ],
   },
   MEDIA: {
     id: "MEDIA",
-    name: "Media & Rozrywka",
-    description: "Buduj karierę od zera. Zdobywaj followersów i wspinaj się po szczeblach!",
+    name: "Media & Entertainment",
+    description: "Build your career from scratch. Gain followers and climb the ladder!",
     color: "#8b5cf6",
     icon: "video",
     buildings: [
-      // ============ TIER 1: Początkujący Twórca ============
+      // ============ TIER 1: Beginner Creator ============
       {
         id: "m1_blog",
-        name: "Blog osobisty",
+        name: "Personal Blog",
         icon: "📝",
         baseCost: 50,
         baseProduction: 0.1,
@@ -703,12 +689,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.15,
-        description: "Piszesz artykuły w wolnym czasie",
+        description: "Write articles in your free time",
         tier: 1,
       },
       {
         id: "m1_social",
-        name: "Konto Social Media",
+        name: "Social Media Account",
         icon: "📱",
         baseCost: 100,
         baseProduction: 0.2,
@@ -717,12 +703,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.15,
-        description: "Posty na Instagram/TikTok",
+        description: "Posts on Instagram/TikTok",
         tier: 1,
       },
       {
         id: "m1_freelance",
-        name: "Zlecenia freelance",
+        name: "Freelance Jobs",
         icon: "💼",
         baseCost: 300,
         baseProduction: 0.5,
@@ -731,13 +717,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.18,
-        description: "Piszesz teksty i tworzysz grafiki dla innych",
+        description: "Write texts and create graphics for others",
         tier: 1,
       },
-      // ============ TIER 2: Rozpoznawalny Twórca ============
+      // ============ TIER 2: Recognized Creator ============
       {
         id: "m2_youtube",
-        name: "Kanał YouTube",
+        name: "YouTube Channel",
         icon: "▶️",
         baseCost: 2000,
         baseProduction: 3,
@@ -746,7 +732,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Twój własny kanał wideo",
+        description: "Your own video channel",
         tier: 2,
       },
       {
@@ -760,7 +746,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Cotygodniowe odcinki audio",
+        description: "Weekly audio episodes",
         tier: 2,
       },
       {
@@ -774,12 +760,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.12,
-        description: "Płatna subskrypcja emailowa",
+        description: "Paid email subscription",
         tier: 2,
       },
       {
         id: "m2_merch",
-        name: "Sklep z merch",
+        name: "Merch Store",
         icon: "👕",
         baseCost: 3000,
         baseProduction: 4,
@@ -788,13 +774,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.16,
-        description: "Koszulki i kubki z Twoim logo",
+        description: "T-shirts and mugs with your logo",
         tier: 2,
       },
-      // ============ TIER 3: Profesjonalista ============
+      // ============ TIER 3: Professional ============
       {
         id: "m3_editor",
-        name: "Montażysta",
+        name: "Video Editor",
         icon: "🎬",
         baseCost: 10000,
         baseProduction: 8,
@@ -803,7 +789,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.12,
-        description: "Zatrudniony edytor wideo",
+        description: "Hired video editor",
         tier: 3,
       },
       {
@@ -817,7 +803,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.12,
-        description: "Ktoś pisze treści za Ciebie",
+        description: "Someone writes content for you",
         tier: 3,
       },
       {
@@ -831,12 +817,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "Zarządza wszystkimi Twoimi kontami",
+        description: "Manages all your accounts",
         tier: 3,
       },
       {
         id: "m3_studio",
-        name: "Małe studio",
+        name: "Small Studio",
         icon: "🎥",
         baseCost: 50000,
         baseProduction: 25,
@@ -845,12 +831,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.18,
-        description: "Własne miejsce do nagrywania",
+        description: "Your own recording space",
         tier: 3,
       },
       {
         id: "m3_agency",
-        name: "Mikro-agencja",
+        name: "Micro-Agency",
         icon: "🏢",
         baseCost: 100000,
         baseProduction: 40,
@@ -859,13 +845,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.20,
-        description: "Reprezentujesz też innych twórców",
+        description: "You represent other creators too",
         tier: 3,
       },
       // ============ TIER 4: Influencer ============
       {
         id: "m4_brand_deal",
-        name: "Umowa z marką",
+        name: "Brand Deal",
         icon: "🤝",
         baseCost: 200000,
         baseProduction: 100,
@@ -874,12 +860,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.22,
-        description: "Ekskluzywna współpraca z dużą marką",
+        description: "Exclusive partnership with a big brand",
         tier: 4,
       },
       {
         id: "m4_production",
-        name: "Studio produkcyjne",
+        name: "Production Studio",
         icon: "🎞️",
         baseCost: 500000,
         baseProduction: 200,
@@ -888,12 +874,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.25,
-        description: "Produkujesz content dla innych",
+        description: "You produce content for others",
         tier: 4,
       },
       {
         id: "m4_app",
-        name: "Własna aplikacja",
+        name: "Own App",
         icon: "📲",
         baseCost: 300000,
         baseProduction: 150,
@@ -902,12 +888,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.20,
-        description: "Twoja platforma dla fanów",
+        description: "Your platform for fans",
         tier: 4,
       },
       {
         id: "m4_course",
-        name: "Kurs online",
+        name: "Online Course",
         icon: "🎓",
         baseCost: 150000,
         baseProduction: 80,
@@ -916,12 +902,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.18,
-        description: '"Jak zostać influencerem"',
+        description: '"How to become an influencer"',
         tier: 4,
       },
       {
         id: "m4_talent",
-        name: "Agencja talentów",
+        name: "Talent Agency",
         icon: "⭐",
         baseCost: 750000,
         baseProduction: 300,
@@ -930,13 +916,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.28,
-        description: "Zarządzasz wschodzącymi gwiazdami",
+        description: "You manage rising stars",
         tier: 4,
       },
-      // ============ TIER 5: Imperium Medialne ============
+      // ============ TIER 5: Media Empire ============
       {
         id: "m5_network",
-        name: "Sieć kanałów",
+        name: "Channel Network",
         icon: "🌐",
         baseCost: 5000000,
         baseProduction: 1500,
@@ -950,7 +936,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
       },
       {
         id: "m5_streaming",
-        name: "Platforma streamingowa",
+        name: "Streaming Platform",
         icon: "📺",
         baseCost: 20000000,
         baseProduction: 5000,
@@ -959,12 +945,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.35,
-        description: 'Twój własny "Netflix"',
+        description: 'Your own "Netflix"',
         tier: 5,
       },
       {
         id: "m5_record_label",
-        name: "Wytwórnia muzyczna",
+        name: "Record Label",
         icon: "🎵",
         baseCost: 10000000,
         baseProduction: 3000,
@@ -973,12 +959,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.32,
-        description: "Podpisujesz artystów i producentów",
+        description: "You sign artists and producers",
         tier: 5,
       },
       {
         id: "m5_media_house",
-        name: "Dom mediowy",
+        name: "Media House",
         icon: "🏛️",
         baseCost: 50000000,
         baseProduction: 10000,
@@ -987,64 +973,64 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.40,
-        description: "Konglomerat kontrolujący rynek",
+        description: "A conglomerate controlling the market",
         tier: 5,
       },
     ],
   },
   FINANCE: {
     id: "FINANCE",
-    name: "Finanse",
-    description: "Zarządzaj ryzykiem, inwestuj kapitał i buduj finansowe imperium!",
+    name: "Finance",
+    description: "Manage risk, invest capital and build a financial empire!",
     color: "#22c55e",
     icon: "chart",
     buildings: [
-      // ============ TIER 1: Początkujący Inwestor ============
+      // ============ TIER 1: Beginner Investor ============
       {
         id: "f1_savings",
-        name: "Konto oszczędnościowe",
+        name: "Savings Account",
         icon: "💰",
         baseCost: 25,
         baseProduction: 0.15,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 0.5, // Very slow AUM growth (savings grow)
+        aumPerSecond: 0.5,
         volatility: "none",
         costMultiplier: 1.12,
-        description: "Bezpieczne ale niski zwrot",
+        description: "Safe but low returns",
         tier: 1,
       },
       {
         id: "f1_bonds",
-        name: "Obligacje skarbowe",
+        name: "Treasury Bonds",
         icon: "📜",
         baseCost: 50,
         baseProduction: 0.25,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 0.3, // Small AUM from bond returns
+        aumPerSecond: 0.3,
         volatility: "low",
         costMultiplier: 1.12,
-        description: "Stabilny dochód",
+        description: "Stable income",
         tier: 1,
       },
       {
         id: "f1_etf",
-        name: "ETF indeksowy",
+        name: "Index ETF",
         icon: "📊",
         baseCost: 100,
         baseProduction: 0.40,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 1.0, // ETF grows your portfolio
+        aumPerSecond: 1.0,
         volatility: "medium",
         costMultiplier: 1.12,
-        description: "Śledzisz rynek",
+        description: "Track the market",
         tier: 1,
       },
       {
         id: "f1_course",
-        name: "Kurs inwestowania",
+        name: "Investment Course",
         icon: "📚",
         baseCost: 75,
         baseProduction: 0,
@@ -1053,13 +1039,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.15,
-        description: "+5% do wszystkich zysków",
+        description: "+5% to all profits",
         tier: 1,
       },
-      // ============ TIER 2: Trader Indywidualny ============
+      // ============ TIER 2: Individual Trader ============
       {
         id: "f2_stocks",
-        name: "Akcje blue-chip",
+        name: "Blue-chip Stocks",
         icon: "📈",
         baseCost: 500,
         baseProduction: 0.20,
@@ -1068,12 +1054,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "medium",
         costMultiplier: 1.14,
-        description: "Stabilne spółki",
+        description: "Stable companies",
         tier: 2,
       },
       {
         id: "f2_growth",
-        name: "Akcje wzrostowe",
+        name: "Growth Stocks",
         icon: "🚀",
         baseCost: 800,
         baseProduction: 0.35,
@@ -1082,26 +1068,26 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "high",
         costMultiplier: 1.16,
-        description: "Ryzykowne ale zyskowne",
+        description: "Risky but profitable",
         tier: 2,
       },
       {
         id: "f2_client",
-        name: "Klient indywidualny",
+        name: "Individual Client",
         icon: "👤",
         baseCost: 1000,
         baseProduction: 0.15,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 5, // +5$ AUM per second per client (300$/min)
+        aumPerSecond: 5,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "+5$/s AUM, płaci prowizję",
+        description: "+5$/s AUM, pays commission",
         tier: 2,
       },
       {
         id: "f2_terminal",
-        name: "Terminal tradingowy",
+        name: "Trading Terminal",
         icon: "🖥️",
         baseCost: 2000,
         baseProduction: 0.10,
@@ -1110,12 +1096,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.18,
-        description: "+10% szybkości transakcji",
+        description: "+10% transaction speed",
         tier: 2,
       },
       {
         id: "f2_analyst",
-        name: "Analityk rynkowy",
+        name: "Market Analyst",
         icon: "🔍",
         baseCost: 1500,
         baseProduction: 0,
@@ -1124,13 +1110,13 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.16,
-        description: "Ostrzega przed zmianami rynku",
+        description: "Warns of market changes",
         tier: 2,
       },
-      // ============ TIER 3: Zarządzający Funduszem ============
+      // ============ TIER 3: Fund Manager ============
       {
         id: "f3_fund",
-        name: "Fundusz inwestycyjny",
+        name: "Investment Fund",
         icon: "💼",
         baseCost: 20000,
         baseProduction: 1.0,
@@ -1139,12 +1125,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "medium",
         costMultiplier: 1.12,
-        description: "Zdywersyfikowany portfel",
+        description: "Diversified portfolio",
         tier: 3,
       },
       {
         id: "f3_realestate",
-        name: "Nieruchomości",
+        name: "Real Estate",
         icon: "🏠",
         baseCost: 50000,
         baseProduction: 0.8,
@@ -1153,12 +1139,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "low",
         costMultiplier: 1.14,
-        description: "Stabilny dochód z najmu",
+        description: "Stable rental income",
         tier: 3,
       },
       {
         id: "f3_commodities",
-        name: "Surowce",
+        name: "Commodities",
         icon: "🛢️",
         baseCost: 15000,
         baseProduction: 0.6,
@@ -1167,18 +1153,18 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "high",
         costMultiplier: 1.16,
-        description: "Złoto, ropa, metale",
+        description: "Gold, oil, metals",
         tier: 3,
       },
       {
         id: "f3_corporate",
-        name: "Klient korporacyjny",
+        name: "Corporate Client",
         icon: "🏢",
         baseCost: 25000,
         baseProduction: 0.5,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 25, // +25$ AUM/s per corporate client (~1,500$/min)
+        aumPerSecond: 25,
         volatility: "none",
         costMultiplier: 1.18,
         description: "+25$/s AUM",
@@ -1186,7 +1172,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
       },
       {
         id: "f3_quant",
-        name: "System algo-trading",
+        name: "Algo-Trading System",
         icon: "🤖",
         baseCost: 30000,
         baseProduction: 0.7,
@@ -1195,12 +1181,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "medium",
         costMultiplier: 1.20,
-        description: "Automatyczny trading",
+        description: "Automated trading",
         tier: 3,
       },
       {
         id: "f3_research",
-        name: "Dział analiz",
+        name: "Research Dept.",
         icon: "📋",
         baseCost: 18000,
         baseProduction: 0,
@@ -1209,10 +1195,10 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "none",
         costMultiplier: 1.14,
-        description: "+15% przewidywania rynku",
+        description: "+15% market prediction",
         tier: 3,
       },
-      // ============ TIER 4: Instytucja Finansowa ============
+      // ============ TIER 4: Financial Institution ============
       {
         id: "f4_pe",
         name: "Private Equity",
@@ -1224,7 +1210,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "high",
         costMultiplier: 1.18,
-        description: "Inwestycje w firmy",
+        description: "Investments in companies",
         tier: 4,
       },
       {
@@ -1238,12 +1224,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "medium",
         costMultiplier: 1.20,
-        description: "Zaawansowane strategie",
+        description: "Advanced strategies",
         tier: 4,
       },
       {
         id: "f4_crypto",
-        name: "Portfel crypto",
+        name: "Crypto Portfolio",
         icon: "🪙",
         baseCost: 100000,
         baseProduction: 5.0,
@@ -1252,26 +1238,26 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "extreme",
         costMultiplier: 1.22,
-        description: "Bitcoin, Ethereum, altcoiny",
+        description: "Bitcoin, Ethereum, altcoins",
         tier: 4,
       },
       {
         id: "f4_pension",
-        name: "Fundusz emerytalny",
+        name: "Pension Fund",
         icon: "👴",
         baseCost: 250000,
         baseProduction: 2.0,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 100, // +100$ AUM/s (~6,000$/min)
+        aumPerSecond: 100,
         volatility: "low",
         costMultiplier: 1.16,
-        description: "+100$/s AUM, wymaga stabilności",
+        description: "+100$/s AUM, requires stability",
         tier: 4,
       },
       {
         id: "f4_ipo",
-        name: "Udział w IPO",
+        name: "IPO Access",
         icon: "🎪",
         baseCost: 150000,
         baseProduction: 3.0,
@@ -1280,24 +1266,24 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "high",
         costMultiplier: 1.18,
-        description: "Wczesny dostęp do nowych spółek",
+        description: "Early access to new companies",
         tier: 4,
       },
       {
         id: "f4_bank",
-        name: "Licencja bankowa",
+        name: "Banking License",
         icon: "🏦",
         baseCost: 500000,
         baseProduction: 2.5,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 50, // +50$ AUM/s depozyty (~3,000$/min)
+        aumPerSecond: 50,
         volatility: "low",
         costMultiplier: 1.25,
-        description: "Przyjmujesz depozyty +50$/s AUM",
+        description: "Accept deposits +50$/s AUM",
         tier: 4,
       },
-      // ============ TIER 5: Finansowe Imperium ============
+      // ============ TIER 5: Financial Empire ============
       {
         id: "f5_sovereign",
         name: "Sovereign Wealth Fund",
@@ -1306,15 +1292,15 @@ export const PATHS: Record<PathType, PathDefinition> = {
         baseProduction: 20,
         followersPerSecond: 0,
         resourcesPerSecond: 0,
-        aumPerSecond: 500, // +500$ AUM/s (~30,000$/min)
+        aumPerSecond: 500,
         volatility: "low",
         costMultiplier: 1.28,
-        description: "Zarządzasz państwowymi pieniędzmi +500$/s AUM",
+        description: "Manage state money +500$/s AUM",
         tier: 5,
       },
       {
         id: "f5_derivatives",
-        name: "Instrumenty pochodne",
+        name: "Derivatives",
         icon: "📉",
         baseCost: 2000000,
         baseProduction: 15,
@@ -1323,7 +1309,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "configurable",
         costMultiplier: 1.26,
-        description: "Opcje, futures, swaps",
+        description: "Options, futures, swaps",
         tier: 5,
       },
       {
@@ -1337,12 +1323,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "medium",
         costMultiplier: 1.30,
-        description: "Zapewniasz płynność",
+        description: "You provide liquidity",
         tier: 5,
       },
       {
         id: "f5_acquisition",
-        name: "Przejęcia",
+        name: "Acquisitions",
         icon: "🦈",
         baseCost: 20000000,
         baseProduction: 30,
@@ -1351,12 +1337,12 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "high",
         costMultiplier: 1.35,
-        description: "Kupujesz inne fundusze",
+        description: "You buy other funds",
         tier: 5,
       },
       {
         id: "f5_central",
-        name: "Wpływ na bank centralny",
+        name: "Central Bank Influence",
         icon: "👑",
         baseCost: 50000000,
         baseProduction: 50,
@@ -1365,7 +1351,7 @@ export const PATHS: Record<PathType, PathDefinition> = {
         aumPerSecond: 0,
         volatility: "low",
         costMultiplier: 1.40,
-        description: "Wpływasz na stopy procentowe",
+        description: "You influence interest rates",
         tier: 5,
       },
     ],
@@ -1541,7 +1527,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.resources,
       met,
-      label: "Surowce",
+      label: "Resources",
     };
     if (!met) allMet = false;
   }
@@ -1553,7 +1539,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.efficiency,
       met,
-      label: "Efektywność",
+      label: "Efficiency",
     };
     if (!met) allMet = false;
   }
@@ -1566,7 +1552,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.aum,
       met,
-      label: "Kapitał (AUM)",
+      label: "Capital (AUM)",
     };
     if (!met) allMet = false;
   }
@@ -1592,7 +1578,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.diversification,
       met,
-      label: "Dywersyfikacja",
+      label: "Diversification",
     };
     if (!met) allMet = false;
   }
@@ -1604,7 +1590,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.crashesSurvived,
       met,
-      label: "Przetrwane krachy",
+      label: "Crashes Survived",
     };
     if (!met) allMet = false;
   }
@@ -1617,7 +1603,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.completedContracts,
       met,
-      label: "Kontrakty",
+      label: "Contracts",
     };
     if (!met) allMet = false;
   }
@@ -1629,7 +1615,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.completedLongTermContracts,
       met,
-      label: "Umowy dlugoterm.",
+      label: "Long-term Contracts",
     };
     if (!met) allMet = false;
   }
@@ -1642,7 +1628,7 @@ export function checkTierRequirements(
       current,
       required: tier.requirements.scandalsSurvived,
       met,
-      label: "Przetrwane skandale",
+      label: "Scandals Survived",
     };
     if (!met) allMet = false;
   }

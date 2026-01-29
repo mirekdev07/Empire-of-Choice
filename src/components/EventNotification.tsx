@@ -77,13 +77,13 @@ export function EventNotification({ pathColor }: { pathColor: string }) {
                 )}
                 {latestEvent.event.effects.reputation && (
                   <p className={latestEvent.event.effects.reputation > 0 ? "text-yellow-400" : "text-red-400"}>
-                    {latestEvent.event.effects.reputation > 0 ? "+" : ""}{latestEvent.event.effects.reputation} reputacji
+                    {latestEvent.event.effects.reputation > 0 ? "+" : ""}{latestEvent.event.effects.reputation} reputation
                   </p>
                 )}
                 {latestEvent.event.effects.productionMultiplier && (
                   <p className={latestEvent.event.effects.productionMultiplier > 1 ? "text-blue-400" : "text-red-400"}>
-                    x{latestEvent.event.effects.productionMultiplier} produkcji
-                    {latestEvent.event.duration && ` przez ${Math.round(latestEvent.event.duration / 60)} min`}
+                    x{latestEvent.event.effects.productionMultiplier} production
+                    {latestEvent.event.duration && ` for ${Math.round(latestEvent.event.duration / 60)} min`}
                   </p>
                 )}
               </div>
@@ -101,7 +101,7 @@ export function EventNotification({ pathColor }: { pathColor: string }) {
       {/* Active events bar */}
       {activeEvents.length > 0 && (
         <div className="bg-slate-800 rounded-lg p-3 border border-slate-700 mb-4">
-          <h3 className="text-sm font-semibold text-slate-400 mb-2">Aktywne efekty</h3>
+          <h3 className="text-sm font-semibold text-slate-400 mb-2">Active Effects</h3>
           <div className="flex flex-wrap gap-2">
             {activeEvents.map((ae) => {
               const timeLeft = ae.endTime ? Math.max(0, Math.ceil((ae.endTime - Date.now()) / 1000)) : 0;

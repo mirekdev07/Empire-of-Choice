@@ -128,10 +128,10 @@ export function SaveSwitcher() {
         <span className="text-lg">{currentIcon}</span>
         <div className="text-left">
           <div className="text-sm font-medium text-white truncate max-w-[120px]">
-            {saveName || "Zapis"}
+            {saveName || "Save"}
           </div>
           <div className="text-xs text-slate-400">
-            {isSwitching ? "Przełączanie..." : "Zmień zapis"}
+            {isSwitching ? "Switching..." : "Switch save"}
           </div>
         </div>
         <svg
@@ -148,12 +148,12 @@ export function SaveSwitcher() {
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-72 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 overflow-hidden">
           <div className="p-2 border-b border-slate-700">
-            <p className="text-xs text-slate-400 uppercase tracking-wide px-2">Twoje zapisy</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wide px-2">Your saves</p>
           </div>
 
           {isLoading ? (
             <div className="p-4 text-center text-slate-400">
-              Ładowanie...
+              Loading...
             </div>
           ) : (
             <div className="max-h-64 overflow-y-auto">

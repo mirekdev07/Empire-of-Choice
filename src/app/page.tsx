@@ -22,7 +22,7 @@ export default function LandingPage() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4" />
-          <p className="text-slate-400">Ładowanie...</p>
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );
@@ -34,7 +34,7 @@ export default function LandingPage() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4" />
-          <p className="text-slate-400">Przekierowywanie...</p>
+          <p className="text-slate-400">Redirecting...</p>
         </div>
       </div>
     );
@@ -43,54 +43,54 @@ export default function LandingPage() {
   const paths = [
     {
       id: "INDUSTRIAL",
-      name: "Przemysł",
+      name: "Industrial",
       icon: "🏭",
       color: "orange",
       bgGradient: "from-orange-500/20 to-orange-900/20",
       borderColor: "border-orange-500/50",
       textColor: "text-orange-400",
-      description: "Buduj imperium przemysłowe od małego garażu po gigantyczne megakompleksy.",
+      description: "Build an industrial empire from a small garage to giant mega-complexes.",
       features: [
-        "Stabilna i przewidywalna produkcja",
-        "Idealna dla początkujących graczy",
-        "Fabryki, huty stali, rafinerie",
-        "Brak losowych modyfikatorów"
+        "Stable and predictable production",
+        "Perfect for beginners",
+        "Factories, steel mills, refineries",
+        "No random modifiers"
       ],
-      difficulty: "Łatwy",
+      difficulty: "Easy",
     },
     {
       id: "MEDIA",
-      name: "Media & Rozrywka",
+      name: "Media & Entertainment",
       icon: "🎬",
       color: "purple",
       bgGradient: "from-purple-500/20 to-purple-900/20",
       borderColor: "border-purple-500/50",
       textColor: "text-purple-400",
-      description: "Zostań influencerem i zbuduj swoje imperium medialne od bloga po globalną sieć TV.",
+      description: "Become an influencer and build your media empire from a blog to a global TV network.",
       features: [
-        "System followers i reputacji",
-        "Kontrakty sponsorskie i kolaboracje",
-        "Eventy viralne i skandale",
-        "5 tierów rozwoju kariery"
+        "Followers and reputation system",
+        "Sponsorship contracts and collaborations",
+        "Viral events and scandals",
+        "5 career development tiers"
       ],
-      difficulty: "Średni",
+      difficulty: "Medium",
     },
     {
       id: "FINANCE",
-      name: "Finanse",
+      name: "Finance",
       icon: "💹",
       color: "green",
       bgGradient: "from-green-500/20 to-green-900/20",
       borderColor: "border-green-500/50",
       textColor: "text-green-400",
-      description: "Inwestuj na giełdzie i zarządzaj funduszami, aby zbudować finansowe imperium.",
+      description: "Invest in the stock market and manage funds to build a financial empire.",
       features: [
-        "Dynamiczny mnożnik rynku (0.5x - 2.0x)",
-        "Wysokie ryzyko, wysokie zyski",
-        "Akcje, fundusze, hedge fundy",
-        "Giełda kryptowalut"
+        "Dynamic market multiplier (0.5x - 2.0x)",
+        "High risk, high reward",
+        "Stocks, funds, hedge funds",
+        "Cryptocurrency exchange"
       ],
-      difficulty: "Trudny",
+      difficulty: "Hard",
     },
   ];
 
@@ -118,8 +118,8 @@ export default function LandingPage() {
           </p>
 
           <p className="text-lg text-slate-500 mb-10 max-w-3xl mx-auto">
-            Wybierz swoją ścieżkę i zbuduj imperium biznesowe.
-            Zarządzaj zasobami, rozwijaj się przez 5 tierów i zostań legendą w swojej branży.
+            Choose your path and build a business empire.
+            Manage resources, progress through 5 tiers and become a legend in your industry.
           </p>
 
           {/* CTA Button */}
@@ -128,22 +128,22 @@ export default function LandingPage() {
             size="lg"
             className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 text-white text-lg px-10 py-6 rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:scale-105"
           >
-            🎮 Rozpocznij grę
+            🎮 Start Playing
           </Button>
 
           {/* Stats */}
           <div className="flex justify-center gap-8 mt-12 text-slate-400">
             <div className="text-center">
               <p className="text-3xl font-bold text-white">3</p>
-              <p className="text-sm">Ścieżki rozwoju</p>
+              <p className="text-sm">Development Paths</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-white">5</p>
-              <p className="text-sm">Tierów progresji</p>
+              <p className="text-sm">Progression Tiers</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-white">∞</p>
-              <p className="text-sm">System Prestige</p>
+              <p className="text-sm">Prestige System</p>
             </div>
           </div>
         </div>
@@ -152,10 +152,10 @@ export default function LandingPage() {
       {/* Paths Section */}
       <section className="max-w-6xl mx-auto px-4 py-16">
         <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
-          Wybierz swoją ścieżkę
+          Choose Your Path
         </h2>
         <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
-          Każda ścieżka oferuje unikalne mechaniki i wyzwania. Wybierz tę, która pasuje do Twojego stylu gry.
+          Each path offers unique mechanics and challenges. Choose the one that fits your playstyle.
         </p>
 
         <div className="grid md:grid-cols-3 gap-6">
@@ -200,23 +200,23 @@ export default function LandingPage() {
       <section className="bg-slate-900/50 py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-12">
-            Funkcje gry
+            Game Features
           </h2>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
               <span className="text-4xl mb-4 block">📈</span>
-              <h3 className="text-lg font-semibold text-white mb-2">System Tierów</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Tier System</h3>
               <p className="text-slate-400 text-sm">
-                Rozwijaj się przez 5 poziomów, odblokowuj nowe budynki i możliwości
+                Progress through 5 levels, unlock new buildings and abilities
               </p>
             </div>
 
             <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
               <span className="text-4xl mb-4 block">📝</span>
-              <h3 className="text-lg font-semibold text-white mb-2">Kontrakty</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Contracts</h3>
               <p className="text-slate-400 text-sm">
-                Przyjmuj zlecenia od sponsorów i współpracuj z innymi twórcami
+                Accept orders from sponsors and collaborate with other creators
               </p>
             </div>
 
@@ -224,15 +224,15 @@ export default function LandingPage() {
               <span className="text-4xl mb-4 block">👑</span>
               <h3 className="text-lg font-semibold text-white mb-2">Prestige</h3>
               <p className="text-slate-400 text-sm">
-                Sprzedaj imperium i zacznij od nowa z permanentnymi bonusami
+                Sell your empire and start over with permanent bonuses
               </p>
             </div>
 
             <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
               <span className="text-4xl mb-4 block">⚡</span>
-              <h3 className="text-lg font-semibold text-white mb-2">Eventy</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Events</h3>
               <p className="text-slate-400 text-sm">
-                Losowe wydarzenia wpływające na Twoją grę - virale, skandale i więcej
+                Random events affecting your game - viral hits, scandals and more
               </p>
             </div>
           </div>
@@ -242,17 +242,17 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="max-w-4xl mx-auto px-4 py-20 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-          Gotowy zbudować swoje imperium?
+          Ready to build your empire?
         </h2>
         <p className="text-slate-400 mb-8">
-          Dołącz teraz i rozpocznij swoją drogę do sukcesu. Gra jest całkowicie darmowa!
+          Join now and start your journey to success. The game is completely free!
         </p>
         <Button
           onClick={() => router.push("/auth")}
           size="lg"
           className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 text-white text-lg px-10 py-6 rounded-xl shadow-lg shadow-purple-500/25 transition-all hover:scale-105"
         >
-          🚀 Zagraj za darmo
+          🚀 Play for Free
         </Button>
       </section>
 

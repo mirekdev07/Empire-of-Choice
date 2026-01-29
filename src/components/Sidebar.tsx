@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { PATHS } from "@/config/gamedata";
-import { logout } from "@/actions/authActions";
+import { signOut } from "next-auth/react";
 import { getUnclaimedAchievementsCount } from "@/actions/gameActions";
 import { Button } from "@/components/ui/button";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { SaveSwitcher } from "./SaveSwitcher";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslations, useLocale } from "next-intl";
@@ -16,7 +16,6 @@ export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const [unclaimedAchievements, setUnclaimedAchievements] = useState(0);
   const path = useGameStore((state) => state.path);
-  const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations();
   const locale = useLocale() as Locale;
@@ -44,9 +43,7 @@ export function Sidebar() {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
-    router.push("/");
-    router.refresh();
+    await signOut({ callbackUrl: "/" });
   };
 
   return (

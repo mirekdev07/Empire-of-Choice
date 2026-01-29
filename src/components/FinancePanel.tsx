@@ -48,7 +48,7 @@ export function FinancePanel({ pathColor }: FinancePanelProps) {
 
   return (
     <div className="bg-slate-900 rounded-lg p-4 mb-4">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 relative">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           <span>{phaseInfo.icon}</span> {t("title")}
         </h3>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getUserSaves, createSave, selectSave, deleteSave, SaveInfo } from "@/actions/gameActions";
+import { getUserSaves, createSave, selectSave, deleteSave, SaveInfo, checkNeedsDisplayName } from "@/actions/gameActions";
 import { PathType } from "@/config/gamedata";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,21 +15,21 @@ const paths: { id: PathType; name: string; icon: string; color: string; descript
     name: "Media",
     icon: "🎬",
     color: "purple",
-    description: "Followers, kontrakty, eventy",
+    description: "Followers, contracts, events",
   },
   {
     id: "INDUSTRIAL",
-    name: "Przemysł",
+    name: "Industrial",
     icon: "🏭",
     color: "orange",
-    description: "Stabilna produkcja",
+    description: "Stable production",
   },
   {
     id: "FINANCE",
-    name: "Finanse",
+    name: "Finance",
     icon: "💹",
     color: "green",
-    description: "Ryzyko i zyski",
+    description: "Risk and profits",
   },
 ];
 
@@ -44,8 +44,17 @@ export default function SavesPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSaves();
-  }, []);
+    const init = async () => {
+      // Check if user needs to set display name first
+      const needsDisplayName = await checkNeedsDisplayName();
+      if (needsDisplayName) {
+        router.push("/setup-profile");
+        return;
+      }
+      loadSaves();
+    };
+    init();
+  }, [router]);
 
   const loadSaves = async () => {
     setIsLoading(true);
@@ -106,7 +115,7 @@ export default function SavesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-white text-xl">Ładowanie zapisów...</div>
+        <div className="text-white text-xl">Loading saves...</div>
       </div>
     );
   }
@@ -119,14 +128,14 @@ export default function SavesPage() {
           <Link href="/" className="inline-block mb-4">
             <span className="text-5xl">👑</span>
           </Link>
-          <h1 className="text-3xl font-bold text-white mb-2">Twoje zapisy gry</h1>
-          <p className="text-slate-400">Wybierz zapis lub stwórz nowy</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Your Game Saves</h1>
+          <p className="text-slate-400">Select a save or create new</p>
         </div>
 
         {/* Existing saves */}
         {saves.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-white mb-4">Kontynuuj grę</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">Continue Game</h2>
             <div className="grid gap-4">
               {saves.map((save) => {
                 const color = getPathColor(save.path);
@@ -156,7 +165,7 @@ export default function SavesPage() {
                               <span>{formatMoney(save.followers)} followers</span>
                             </div>
                             <p className="text-xs text-slate-500 mt-1">
-                              Ostatnio: {formatDate(save.lastPlayedAt)}
+                              Last played: {formatDate(save.lastPlayedAt)}
                             </p>
                           </div>
                         </div>
@@ -172,7 +181,7 @@ export default function SavesPage() {
                                   handleDeleteSave(save.id);
                                 }}
                               >
-                                Potwierdź
+                                Confirm
                               </Button>
                               <Button
                                 size="sm"
@@ -182,7 +191,7 @@ export default function SavesPage() {
                                   setDeleteConfirm(null);
                                 }}
                               >
-                                Anuluj
+                                Cancel
                               </Button>
                             </>
                           ) : (
@@ -195,7 +204,7 @@ export default function SavesPage() {
                                   handleSelectSave(save.id);
                                 }}
                               >
-                                Graj
+                                Play
                               </Button>
                               <Button
                                 size="sm"
@@ -229,27 +238,27 @@ export default function SavesPage() {
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
               >
-                + Nowy zapis gry
+                + New Game Save
               </Button>
             ) : (
-              <p className="text-slate-500">Osiągnięto limit 5 zapisów</p>
+              <p className="text-slate-500">5 saves limit reached</p>
             )}
           </div>
         ) : (
           <Card className="bg-slate-800/80 border-slate-700">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Nowy zapis</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">New Save</h2>
 
               {/* Save name */}
               <div className="mb-6">
                 <label className="block text-sm text-slate-400 mb-2">
-                  Nazwa zapisu (opcjonalna)
+                  Save name (optional)
                 </label>
                 <input
                   type="text"
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}
-                  placeholder="np. Moje imperium medialne"
+                  placeholder="e.g. My Media Empire"
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -257,7 +266,7 @@ export default function SavesPage() {
               {/* Path selection */}
               <div className="mb-6">
                 <label className="block text-sm text-slate-400 mb-3">
-                  Wybierz ścieżkę
+                  Choose your path
                 </label>
                 <div className="grid md:grid-cols-3 gap-4">
                   {paths.map((path) => (
@@ -289,7 +298,7 @@ export default function SavesPage() {
                   disabled={!selectedPath || isCreating}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
                 >
-                  {isCreating ? "Tworzenie..." : "Rozpocznij grę"}
+                  {isCreating ? "Creating..." : "Start Game"}
                 </Button>
                 <Button
                   onClick={() => {
@@ -300,7 +309,7 @@ export default function SavesPage() {
                   variant="outline"
                   className="border-slate-600"
                 >
-                  Anuluj
+                  Cancel
                 </Button>
               </div>
             </CardContent>
@@ -310,7 +319,7 @@ export default function SavesPage() {
         {/* Back link */}
         <div className="text-center mt-8">
           <Link href="/" className="text-slate-400 hover:text-white transition-colors">
-            ← Powrót do strony głównej
+            ← Back to homepage
           </Link>
         </div>
       </div>

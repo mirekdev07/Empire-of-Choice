@@ -29,7 +29,7 @@ export default function AuthPage() {
           router.push("/saves");
           router.refresh();
         } else {
-          setError(result.error || "Błąd logowania");
+          setError(result.error || "Login error");
         }
       } else {
         const result = await register(email, password, name || undefined);
@@ -41,11 +41,11 @@ export default function AuthPage() {
             router.refresh();
           }
         } else {
-          setError(result.error || "Błąd rejestracji");
+          setError(result.error || "Registration error");
         }
       }
     } catch {
-      setError("Wystąpił nieoczekiwany błąd");
+      setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +63,7 @@ export default function AuthPage() {
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
         >
           <span>←</span>
-          <span>Powrót do strony głównej</span>
+          <span>Back to home</span>
         </Link>
 
         {/* Logo */}
@@ -73,7 +73,7 @@ export default function AuthPage() {
             Empire of Choice
           </h1>
           <p className="text-slate-400">
-            {isLogin ? "Zaloguj się do swojego imperium" : "Stwórz nowe konto"}
+            {isLogin ? "Sign in to your empire" : "Create a new account"}
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function AuthPage() {
         <Card className="bg-slate-800/80 border-slate-700 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-center text-white">
-              {isLogin ? "Logowanie" : "Rejestracja"}
+              {isLogin ? "Sign In" : "Sign Up"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -92,7 +92,7 @@ export default function AuthPage() {
                     htmlFor="name"
                     className="block text-sm text-slate-400 mb-1"
                   >
-                    Nazwa gracza (opcjonalna)
+                    Player name (optional)
                   </label>
                   <input
                     id="name"
@@ -100,7 +100,7 @@ export default function AuthPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                    placeholder="Twoja nazwa w grze"
+                    placeholder="Your in-game name"
                   />
                 </div>
               )}
@@ -119,7 +119,7 @@ export default function AuthPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  placeholder="twoj@email.pl"
+                  placeholder="your@email.com"
                 />
               </div>
 
@@ -128,7 +128,7 @@ export default function AuthPage() {
                   htmlFor="password"
                   className="block text-sm text-slate-400 mb-1"
                 >
-                  Hasło
+                  Password
                 </label>
                 <input
                   id="password"
@@ -138,7 +138,7 @@ export default function AuthPage() {
                   required
                   minLength={6}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                  placeholder="Min. 6 znaków"
+                  placeholder="Min. 6 characters"
                 />
               </div>
 
@@ -154,10 +154,10 @@ export default function AuthPage() {
                 className="w-full bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700 text-white py-3 rounded-lg transition-all"
               >
                 {isLoading
-                  ? "Ładowanie..."
+                  ? "Loading..."
                   : isLogin
-                  ? "🎮 Zaloguj się"
-                  : "🚀 Zarejestruj się"}
+                  ? "🎮 Sign In"
+                  : "🚀 Sign Up"}
               </Button>
             </form>
 
@@ -167,7 +167,7 @@ export default function AuthPage() {
                   <div className="w-full border-t border-slate-700"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-slate-800 text-slate-500">lub</span>
+                  <span className="px-2 bg-slate-800 text-slate-500">or</span>
                 </div>
               </div>
 
@@ -196,7 +196,7 @@ export default function AuthPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Kontynuuj z Google
+                Continue with Google
               </Button>
 
               <button
@@ -208,8 +208,8 @@ export default function AuthPage() {
                 className="mt-4 text-sm text-slate-400 hover:text-white transition-colors"
               >
                 {isLogin
-                  ? "Nie masz konta? Zarejestruj się"
-                  : "Masz już konto? Zaloguj się"}
+                  ? "Don't have an account? Sign up"
+                  : "Already have an account? Sign in"}
               </button>
             </div>
           </CardContent>
@@ -217,7 +217,7 @@ export default function AuthPage() {
 
         {/* Info */}
         <p className="text-center text-slate-500 text-sm mt-6">
-          Rejestrując się, zgadzasz się na warunki użytkowania gry.
+          By signing up, you agree to the game&apos;s terms of use.
         </p>
       </div>
     </div>

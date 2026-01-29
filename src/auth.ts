@@ -60,7 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             data: {
               email: user.email,
               name: user.name || user.email.split("@")[0],
-              // No password for OAuth users
+              displayNameSet: false, // User must set display name
             },
           });
           user.id = newUser.id;

@@ -21,6 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useTranslations } from "next-intl";
 
+// Mobile tab types
+type MobileTab = "stats" | "buildings" | "actions";
+
 interface DashboardProps {
   initialState: GameState;
 }
@@ -44,7 +47,7 @@ function OfflineEarningsModal({
   } else if (minutes > 0) {
     timeText = `${minutes} min`;
   } else {
-    timeText = `${seconds} sek`;
+    timeText = `${seconds} sec`;
   }
 
   return (
@@ -52,21 +55,21 @@ function OfflineEarningsModal({
       <div className="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-600 shadow-2xl">
         <div className="text-center">
           <div className="text-5xl mb-4">💰</div>
-          <h2 className="text-xl font-bold text-white mb-2">Witaj z powrotem!</h2>
+          <h2 className="text-xl font-bold text-white mb-2">Welcome back!</h2>
           <p className="text-slate-400 mb-4">
-            Podczas Twojej nieobecnosci ({timeText}) zarobiles:
+            While you were away ({timeText}) you earned:
           </p>
           <p className="text-3xl font-bold text-green-400 mb-6">
             +${formatMoney(earnings)}
           </p>
           <p className="text-xs text-slate-500 mb-4">
-            (20% normalnej produkcji, max 8h)
+            (20% of normal production, max 8h)
           </p>
           <button
             onClick={onClose}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
           >
-            Super!
+            Awesome!
           </button>
         </div>
       </div>
@@ -80,6 +83,7 @@ export function Dashboard({ initialState }: DashboardProps) {
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState(1);
   const [offlineEarnings, setOfflineEarnings] = useState<{ earnings: number; seconds: number } | null>(null);
+  const [mobileTab, setMobileTab] = useState<MobileTab>("stats");
 
 
   const path = useGameStore((state) => state.path);
@@ -315,147 +319,63 @@ export function Dashboard({ initialState }: DashboardProps) {
         />
       )}
 
-      <div className="p-3 pt-16 md:p-6 md:pt-6 max-w-7xl mx-auto">
-        {/* DEV: Debug buttons for Media - TODO: remove before release */}
-        {path === "MEDIA" && (
-          <div className="bg-yellow-900/50 border border-yellow-600 rounded-lg p-2 mb-4 flex items-center gap-2 flex-wrap">
-            <span className="text-yellow-400 text-xs font-mono">DEV:</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().addMoney(50000)}
-            >
-              +50,000$
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().addFollowers(10000)}
-            >
-              +10,000 followers
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().setReputation(Math.min(100, reputation + 20))}
-            >
-              +20 rep
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.setState((state) => ({ totalEarnings: state.totalEarnings + 50000 }))}
-            >
-              +50,000$ zarobki
-            </Button>
-          </div>
-        )}
+      {/* Mobile bottom navigation - only visible on mobile */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-700 z-40 safe-area-pb">
+        <div className="flex">
+          <button
+            onClick={() => setMobileTab("stats")}
+            className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${
+              mobileTab === "stats" ? "text-white bg-slate-800" : "text-slate-400"
+            }`}
+          >
+            <span className="text-lg">📊</span>
+            <span className="text-xs">Stats</span>
+          </button>
+          <button
+            onClick={() => setMobileTab("buildings")}
+            className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${
+              mobileTab === "buildings" ? "text-white bg-slate-800" : "text-slate-400"
+            }`}
+          >
+            <span className="text-lg">🏗️</span>
+            <span className="text-xs">Buildings</span>
+          </button>
+          <button
+            onClick={() => setMobileTab("actions")}
+            className={`flex-1 py-3 flex flex-col items-center gap-1 transition-colors ${
+              mobileTab === "actions" ? "text-white bg-slate-800" : "text-slate-400"
+            }`}
+          >
+            <span className="text-lg">⚡</span>
+            <span className="text-xs">Actions</span>
+          </button>
+        </div>
+      </div>
 
-        {/* DEV: Debug buttons for Industrial - TODO: remove before release */}
-        {path === "INDUSTRIAL" && (
-          <div className="bg-yellow-900/50 border border-yellow-600 rounded-lg p-2 mb-4 flex items-center gap-2 flex-wrap">
-            <span className="text-yellow-400 text-xs font-mono">DEV:</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().addMoney(50000)}
-            >
-              +50,000$
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().addResources(500)}
-            >
-              +500 surowcow
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().setEfficiency(Math.min(150, efficiency + 20))}
-            >
-              +20% efektywnosc
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().setMachineCondition(100)}
-            >
-              100% kondycja
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.setState((state) => ({ totalEarnings: state.totalEarnings + 50000 }))}
-            >
-              +50,000$ zarobki
-            </Button>
+      {/* Mobile mini stats bar - always visible on mobile */}
+      <div className="md:hidden fixed top-14 left-0 right-0 bg-slate-900/95 backdrop-blur border-b border-slate-700 z-30 px-3 py-2">
+        <div className="flex justify-between items-center text-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-green-400 font-semibold">${formatMoney(money)}</span>
+            <span className="text-slate-500">+${formatMoney(moneyPerSecond)}/s</span>
           </div>
-        )}
+          <div className="flex items-center gap-2">
+            {path === "MEDIA" && (
+              <span className="text-purple-400">{formatMoney(followers)} foll.</span>
+            )}
+            {path === "INDUSTRIAL" && (
+              <span className={resources < 10 ? "text-red-400" : "text-orange-400"}>{formatMoney(resources)} sur.</span>
+            )}
+            {path === "FINANCE" && (
+              <span className="text-cyan-400">${formatMoney(aum)} AUM</span>
+            )}
+          </div>
+        </div>
+      </div>
 
-        {/* DEV: Debug buttons for Finance - TODO: remove before release */}
-        {path === "FINANCE" && (
-          <div className="bg-yellow-900/50 border border-yellow-600 rounded-lg p-2 mb-4 flex items-center gap-2 flex-wrap">
-            <span className="text-yellow-400 text-xs font-mono">DEV:</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().addMoney(50000)}
-            >
-              +50,000$
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().addAum(10000)}
-            >
-              +10,000$ AUM
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().setCreditRating("AAA")}
-            >
-              Rating AAA
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().setMarketPhase("bull")}
-            >
-              Hossa
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.getState().setMarketPhase("crash")}
-            >
-              Krach
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs border-yellow-600 text-yellow-400 hover:bg-yellow-600 hover:text-black"
-              onClick={() => useGameStore.setState((state) => ({ totalEarnings: state.totalEarnings + 50000 }))}
-            >
-              +50,000$ zarobki
-            </Button>
-          </div>
-        )}
+      <div className="p-3 pt-28 md:p-6 md:pt-6 max-w-7xl mx-auto pb-24 md:pb-6">
+        {/* STATS TAB CONTENT - visible on mobile stats tab or always on desktop */}
+        <div className={`${mobileTab !== "stats" ? "hidden md:block" : ""}`}>
 
         {/* Header with tier info */}
         <div className="bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700">
@@ -480,7 +400,7 @@ export function Dashboard({ initialState }: DashboardProps) {
                 style={{ backgroundColor: canUpgrade ? pathInfo.color : undefined }}
                 variant={canUpgrade ? "default" : "outline"}
               >
-                {canUpgrade ? `Awansuj do Tier ${nextTier.id}` : `🔒 Tier ${nextTier.id}`}
+                {canUpgrade ? `Upgrade to Tier ${nextTier.id}` : `🔒 Tier ${nextTier.id}`}
               </Button>
             )}
           </div>
@@ -490,27 +410,27 @@ export function Dashboard({ initialState }: DashboardProps) {
             {/* Money - same for all paths */}
             <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
               <InfoTooltip
-                title="Pieniadze"
+                title="Money"
                 content={
                   <>
-                    <p>Twoja aktualna gotowka.</p>
-                    <p className="mt-2 text-slate-400">Co wplywa na zarobki:</p>
+                    <p>Your current cash.</p>
+                    <p className="mt-2 text-slate-400">What affects earnings:</p>
                     <ul className="list-disc list-inside text-slate-400 mt-1">
-                      <li>Budynki - kazdy generuje $/s</li>
-                      {path === "MEDIA" && <li>Publikowanie - +10% na 30s</li>}
-                      {path === "MEDIA" && currentTier >= 2 && <li>Synergie aktywow</li>}
-                      {path === "MEDIA" && currentTier >= 3 && <li>Morale zespolu (50-120%)</li>}
-                      {path === "MEDIA" && currentTier >= 3 && <li>Koszty stale (pensje -20%)</li>}
-                      {path === "MEDIA" && currentTier >= 4 && <li>Dywersyfikacja (+5%/typ)</li>}
-                      {path === "INDUSTRIAL" && <li>Efektywnosc (0-150%)</li>}
-                      {path === "INDUSTRIAL" && <li>Kondycja maszyn</li>}
-                      {path === "INDUSTRIAL" && <li>Dostepnosc surowcow</li>}
-                      <li>Eventy (pozytywne/negatywne)</li>
+                      <li>Buildings - each generates $/s</li>
+                      {path === "MEDIA" && <li>Publishing - +10% for 30s</li>}
+                      {path === "MEDIA" && currentTier >= 2 && <li>Asset synergies</li>}
+                      {path === "MEDIA" && currentTier >= 3 && <li>Team morale (50-120%)</li>}
+                      {path === "MEDIA" && currentTier >= 3 && <li>Fixed costs (salaries -20%)</li>}
+                      {path === "MEDIA" && currentTier >= 4 && <li>Diversification (+5%/type)</li>}
+                      {path === "INDUSTRIAL" && <li>Efficiency (0-150%)</li>}
+                      {path === "INDUSTRIAL" && <li>Machine condition</li>}
+                      {path === "INDUSTRIAL" && <li>Resource availability</li>}
+                      <li>Events (positive/negative)</li>
                     </ul>
                   </>
                 }
               />
-              <p className="text-slate-400 text-xs uppercase mb-1">Pieniadze</p>
+              <p className="text-slate-400 text-xs uppercase mb-1">Money</p>
               <p className="text-xl md:text-2xl font-bold text-green-400">${formatMoney(money)}</p>
               <p className="text-xs text-slate-500">+${formatMoney(moneyPerSecond)}/s</p>
             </div>
@@ -522,19 +442,19 @@ export function Dashboard({ initialState }: DashboardProps) {
                   title="Followers"
                   content={
                     <>
-                      <p>Twoi obserwujacy/fani.</p>
-                      <p className="mt-2 text-slate-400">Zrodla followers:</p>
+                      <p>Your followers/fans.</p>
+                      <p className="mt-2 text-slate-400">Follower sources:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Budynki - niektore daja followers/s</li>
-                        <li>Viralowy post (+1000)</li>
-                        <li>Kontrakty (nagrody)</li>
-                        <li>Eventy (pozytywne/negatywne)</li>
+                        <li>Buildings - some give followers/s</li>
+                        <li>Viral post (+1000)</li>
+                        <li>Contracts (rewards)</li>
+                        <li>Events (positive/negative)</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Do czego potrzebni:</p>
+                      <p className="mt-2 text-slate-400">What they are needed for:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Odblokowanie tierow</li>
-                        <li>Lepsze oferty sponsorskie</li>
-                        <li>Niektore kontrakty</li>
+                        <li>Unlocking tiers</li>
+                        <li>Better sponsorship offers</li>
+                        <li>Some contracts</li>
                       </ul>
                     </>
                   }
@@ -549,18 +469,18 @@ export function Dashboard({ initialState }: DashboardProps) {
                   title="AUM (Assets Under Management)"
                   content={
                     <>
-                      <p>Kapital pod zarzadzaniem - pieniadze klientow.</p>
-                      <p className="mt-2 text-slate-400">Zrodla AUM:</p>
+                      <p>Capital under management - client money.</p>
+                      <p className="mt-2 text-slate-400">AUM sources:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Klienci indywidualni (+500$/klient)</li>
-                        <li>Klienci korporacyjni (+5,000$/firma)</li>
-                        <li>Fundusze emerytalne (+50,000$/fundusz)</li>
-                        <li>Sovereign wealth (+500,000$/kontrakt)</li>
+                        <li>Individual clients (+$500/client)</li>
+                        <li>Corporate clients (+$5,000/company)</li>
+                        <li>Pension funds (+$50,000/fund)</li>
+                        <li>Sovereign wealth (+$500,000/contract)</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Wplyw:</p>
+                      <p className="mt-2 text-slate-400">Impact:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Wiekszy AUM = wyzsza prowizja</li>
-                        <li>Strata AUM klientow = spadek ratingu</li>
+                        <li>Higher AUM = higher commission</li>
+                        <li>Client AUM loss = rating drop</li>
                       </ul>
                     </>
                   }
@@ -572,26 +492,26 @@ export function Dashboard({ initialState }: DashboardProps) {
             ) : (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Surowce"
+                  title="Resources"
                   content={
                     <>
-                      <p>Surowce niezbedne do produkcji.</p>
-                      <p className="mt-2 text-slate-400">Zrodla surowcow:</p>
+                      <p>Resources needed for production.</p>
+                      <p className="mt-2 text-slate-400">Resource sources:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Dostawcy lokalni (+0.5/s)</li>
-                        <li>Hurtownie (+2.0/s)</li>
+                        <li>Local suppliers (+0.5/s)</li>
+                        <li>Wholesalers (+2.0/s)</li>
                         <li>Import (+5.0/s)</li>
-                        <li>Wlasna kopalnia (+20/s)</li>
+                        <li>Own mine (+20/s)</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Zuzycie:</p>
+                      <p className="mt-2 text-slate-400">Consumption:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Budynki produkcyjne zuzywaja surowce</li>
-                        <li>Brak surowcow = spadek produkcji</li>
+                        <li>Production buildings use resources</li>
+                        <li>No resources = production drop</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Surowce</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Resources</p>
                 <p className={`text-xl md:text-2xl font-bold ${resources < 10 ? "text-red-400" : "text-orange-400"}`}>
                   {formatMoney(resources)}
                 </p>
@@ -605,55 +525,55 @@ export function Dashboard({ initialState }: DashboardProps) {
             {path === "MEDIA" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Reputacja"
+                  title="Reputation"
                   content={
                     <>
-                      <p>Twoja reputacja w branzy (0-100).</p>
-                      <p className="mt-2 text-green-400">Co zwieksza:</p>
+                      <p>Your industry reputation (0-100).</p>
+                      <p className="mt-2 text-green-400">What increases it:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Publikowanie (+1, cooldown 1 min)</li>
-                        <li>Kamienie milowe followers (+10)</li>
-                        <li>Ukonczone kontrakty (+2 do +25)</li>
-                        <li>Pozytywne eventy</li>
+                        <li>Publishing (+1, 1 min cooldown)</li>
+                        <li>Follower milestones (+10)</li>
+                        <li>Completed contracts (+2 to +25)</li>
+                        <li>Positive events</li>
                       </ul>
-                      <p className="mt-2 text-red-400">Co zmniejsza:</p>
+                      <p className="mt-2 text-red-400">What decreases it:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Brak aktywnosci (-2)</li>
-                        <li>Skandale (-15 do -30)</li>
-                        <li>Negatywne eventy</li>
+                        <li>Inactivity (-2)</li>
+                        <li>Scandals (-15 to -30)</li>
+                        <li>Negative events</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Reputacja</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Reputation</p>
                 <p className="text-xl md:text-2xl font-bold text-yellow-400">{reputation}/100</p>
               </div>
             ) : path === "FINANCE" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Rating kredytowy"
+                  title="Credit Rating"
                   content={
                     <>
-                      <p>Twoja wiarygodnosc finansowa (D do AAA).</p>
-                      <p className="mt-2 text-green-400">Co zwieksza:</p>
+                      <p>Your financial credibility (D to AAA).</p>
+                      <p className="mt-2 text-green-400">What increases it:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Stabilne zyski (+1/5 min)</li>
-                        <li>Dywersyfikacja portfela (+1)</li>
-                        <li>Niski poziom dzwigni (+1)</li>
-                        <li>Ukonczone kontrakty (+1)</li>
+                        <li>Stable profits (+1/5 min)</li>
+                        <li>Portfolio diversification (+1)</li>
+                        <li>Low leverage (+1)</li>
+                        <li>Completed contracts (+1)</li>
                       </ul>
-                      <p className="mt-2 text-red-400">Co zmniejsza:</p>
+                      <p className="mt-2 text-red-400">What decreases it:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Straty (-1 za -10% kapitalu)</li>
-                        <li>Wysoka dzwignia (-1)</li>
-                        <li>Nieukonczone kontrakty (-2)</li>
-                        <li>Kryzys finansowy (-1-3)</li>
+                        <li>Losses (-1 per -10% capital)</li>
+                        <li>High leverage (-1)</li>
+                        <li>Uncompleted contracts (-2)</li>
+                        <li>Financial crisis (-1-3)</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Wplyw ratingu:</p>
+                      <p className="mt-2 text-slate-400">Rating impact:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>AAA: 150% klientow, 2% pozyczki</li>
-                        <li>BBB: 100% klientow, 8% pozyczki</li>
-                        <li>D: Bankructwo</li>
+                        <li>AAA: 150% clients, 2% loans</li>
+                        <li>BBB: 100% clients, 8% loans</li>
+                        <li>D: Bankruptcy</li>
                       </ul>
                     </>
                   }
@@ -669,27 +589,27 @@ export function Dashboard({ initialState }: DashboardProps) {
             ) : (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Efektywnosc"
+                  title="Efficiency"
                   content={
                     <>
-                      <p>Efektywnosc produkcji (0-150%).</p>
-                      <p className="mt-2 text-green-400">Co zwieksza:</p>
+                      <p>Production efficiency (0-150%).</p>
+                      <p className="mt-2 text-green-400">What increases it:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Nowoczesne maszyny (+5-20%)</li>
-                        <li>Przeszkoleni pracownicy (+10%)</li>
-                        <li>Automatyzacja (+15-30%)</li>
-                        <li>Certyfikaty jakosci (+5%)</li>
+                        <li>Modern machines (+5-20%)</li>
+                        <li>Trained workers (+10%)</li>
+                        <li>Automation (+15-30%)</li>
+                        <li>Quality certificates (+5%)</li>
                       </ul>
-                      <p className="mt-2 text-red-400">Co zmniejsza:</p>
+                      <p className="mt-2 text-red-400">What decreases it:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Stare/zuzyte maszyny (-10-30%)</li>
-                        <li>Awarie (-20% tymczasowo)</li>
-                        <li>Strajki pracownikow (-50%)</li>
+                        <li>Old/worn machines (-10-30%)</li>
+                        <li>Breakdowns (-20% temporarily)</li>
+                        <li>Worker strikes (-50%)</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Efektywnosc</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Efficiency</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   efficiency >= 100 ? "text-green-400" : efficiency >= 70 ? "text-yellow-400" : "text-red-400"
                 }`}>
@@ -702,80 +622,80 @@ export function Dashboard({ initialState }: DashboardProps) {
             {path === "MEDIA" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Laczne zarobki"
+                  title="Total Earnings"
                   content={
                     <>
-                      <p>Suma wszystkich zarobionych pieniedzy.</p>
-                      <p className="mt-2 text-slate-400">Do czego potrzebne:</p>
+                      <p>Sum of all money earned.</p>
+                      <p className="mt-2 text-slate-400">What it's needed for:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Odblokowanie kolejnych tierow</li>
-                        <li>Wymaganie do Prestige (10M$)</li>
-                        <li>Obliczanie punktow prestige</li>
+                        <li>Unlocking next tiers</li>
+                        <li>Prestige requirement ($10M)</li>
+                        <li>Calculating prestige points</li>
                       </ul>
                       <p className="mt-2 text-slate-500 text-xs">
-                        Ta wartosc nigdy nie spada, nawet gdy wydajesz pieniadze.
+                        This value never decreases, even when you spend money.
                       </p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Laczne zarobki</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Total Earnings</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">${formatMoney(totalEarnings)}</p>
               </div>
             ) : path === "FINANCE" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Faza rynku"
+                  title="Market Phase"
                   content={
                     <>
-                      <p>Aktualny cykl rynkowy wplywajacy na zyski.</p>
-                      <p className="mt-2 text-slate-400">Fazy:</p>
+                      <p>Current market cycle affecting profits.</p>
+                      <p className="mt-2 text-slate-400">Phases:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li><span className="text-green-400">Hossa:</span> +35% zyskow</li>
-                        <li><span className="text-slate-300">Stabilny:</span> normalne zyski</li>
-                        <li><span className="text-yellow-400">Korekta:</span> -15% zyskow</li>
-                        <li><span className="text-orange-400">Bessa:</span> -40% zyskow</li>
-                        <li><span className="text-red-400">Krach:</span> -70% zyskow</li>
+                        <li><span className="text-green-400">Bull:</span> +35% profits</li>
+                        <li><span className="text-slate-300">Stable:</span> normal profits</li>
+                        <li><span className="text-yellow-400">Correction:</span> -15% profits</li>
+                        <li><span className="text-orange-400">Bear:</span> -40% profits</li>
+                        <li><span className="text-red-400">Crash:</span> -70% profits</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Cykl zmienia sie co 2-5 minut.</p>
+                      <p className="mt-2 text-slate-400">Cycle changes every 2-5 minutes.</p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Rynek</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Market</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   marketPhase === "bull" ? "text-green-400" :
                   marketPhase === "stable" ? "text-slate-300" :
                   marketPhase === "correction" ? "text-yellow-400" :
                   marketPhase === "bear" ? "text-orange-400" : "text-red-400"
                 }`}>
-                  {marketPhase === "bull" ? "HOSSA" :
-                   marketPhase === "stable" ? "STABILNY" :
-                   marketPhase === "correction" ? "KOREKTA" :
-                   marketPhase === "bear" ? "BESSA" : "KRACH"}
+                  {marketPhase === "bull" ? "BULL" :
+                   marketPhase === "stable" ? "STABLE" :
+                   marketPhase === "correction" ? "CORRECTION" :
+                   marketPhase === "bear" ? "BEAR" : "CRASH"}
                 </p>
               </div>
             ) : (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Kondycja maszyn"
+                  title="Machine Condition"
                   content={
                     <>
-                      <p>Stan techniczny maszyn (0-100%).</p>
-                      <p className="mt-2 text-slate-400">Wplyw na produkcje:</p>
+                      <p>Technical condition of machines (0-100%).</p>
+                      <p className="mt-2 text-slate-400">Production impact:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>100-80%: Pelna wydajnosc</li>
-                        <li>80-50%: -10% wydajnosci</li>
-                        <li>50-30%: -25% wydajnosci</li>
-                        <li>30-0%: -50% wydajnosci</li>
+                        <li>100-80%: Full efficiency</li>
+                        <li>80-50%: -10% efficiency</li>
+                        <li>50-30%: -25% efficiency</li>
+                        <li>30-0%: -50% efficiency</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Konserwacja:</p>
+                      <p className="mt-2 text-slate-400">Maintenance:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Tier 1-2: Reczna naprawa (+20%)</li>
-                        <li>Tier 3+: Automatyczna z Dzialem utrzymania</li>
+                        <li>Tier 1-2: Manual repair (+20%)</li>
+                        <li>Tier 3+: Automatic with Maintenance Dept</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Kondycja maszyn</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Machine Condition</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   machineCondition >= 80 ? "text-green-400" : machineCondition >= 50 ? "text-yellow-400" : "text-red-400"
                 }`}>
@@ -794,19 +714,19 @@ export function Dashboard({ initialState }: DashboardProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Laczne zarobki"
+                  title="Total Earnings"
                   content={
                     <>
-                      <p>Suma wszystkich zarobionych pieniedzy.</p>
-                      <p className="mt-2 text-slate-400">Do czego potrzebne:</p>
+                      <p>Sum of all money earned.</p>
+                      <p className="mt-2 text-slate-400">What it's needed for:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Odblokowanie kolejnych tierow</li>
-                        <li>Wymaganie do Prestige</li>
+                        <li>Unlocking next tiers</li>
+                        <li>Prestige requirement</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Laczne zarobki</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Total Earnings</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">${formatMoney(totalEarnings)}</p>
               </div>
             </div>
@@ -817,40 +737,40 @@ export function Dashboard({ initialState }: DashboardProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Laczne zarobki"
+                  title="Total Earnings"
                   content={
                     <>
-                      <p>Suma wszystkich zarobionych pieniedzy.</p>
-                      <p className="mt-2 text-slate-400">Do czego potrzebne:</p>
+                      <p>Sum of all money earned.</p>
+                      <p className="mt-2 text-slate-400">What it's needed for:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Odblokowanie kolejnych tierow</li>
-                        <li>Wymaganie do Prestige (10M$)</li>
+                        <li>Unlocking next tiers</li>
+                        <li>Prestige requirement ($10M)</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Laczne zarobki</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Total Earnings</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">${formatMoney(totalEarnings)}</p>
               </div>
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Dzwignia finansowa"
+                  title="Leverage"
                   content={
                     <>
-                      <p>Mnozy zyski i straty.</p>
-                      <p className="mt-2 text-slate-400">Poziomy:</p>
+                      <p>Multiplies profits and losses.</p>
+                      <p className="mt-2 text-slate-400">Levels:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>1x: brak dzwigni, 0% kosztu</li>
-                        <li>2x: podwojenie, 0.5%/min</li>
+                        <li>1x: no leverage, 0% cost</li>
+                        <li>2x: double, 0.5%/min</li>
                         <li>5x: Tier 3+, 1.5%/min</li>
                         <li>10x: Tier 4+, 3%/min</li>
                         <li>20x: Tier 5, 5%/min</li>
                       </ul>
-                      <p className="mt-2 text-red-400">Ryzyko margin call rosnie z dzwignia!</p>
+                      <p className="mt-2 text-red-400">Margin call risk increases with leverage!</p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Dzwignia</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Leverage</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   leverage === 1 ? "text-slate-300" :
                   leverage <= 5 ? "text-yellow-400" : "text-red-400"
@@ -863,36 +783,36 @@ export function Dashboard({ initialState }: DashboardProps) {
                   title="Hedging"
                   content={
                     <>
-                      <p>Zabezpieczenie przed zmiennoscia rynku.</p>
-                      <p className="mt-2 text-slate-400">Efekt:</p>
+                      <p>Protection against market volatility.</p>
+                      <p className="mt-2 text-slate-400">Effect:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Redukuje zyski w hossie (30%)</li>
-                        <li>Redukuje straty w bessie (20%)</li>
+                        <li>Reduces profits in bull market (30%)</li>
+                        <li>Reduces losses in bear market (20%)</li>
                       </ul>
-                      <p className="mt-2 text-slate-500 text-xs">Dostepne od Tier 3.</p>
+                      <p className="mt-2 text-slate-500 text-xs">Available from Tier 3.</p>
                     </>
                   }
                 />
                 <p className="text-slate-400 text-xs uppercase mb-1">Hedging</p>
                 <p className={`text-xl md:text-2xl font-bold ${hedgingEnabled ? "text-green-400" : "text-slate-500"}`}>
-                  {hedgingEnabled ? "AKTYWNY" : "WYL."}
+                  {hedgingEnabled ? "ACTIVE" : "OFF"}
                 </p>
               </div>
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Przetrwane krachy"
+                  title="Crashes Survived"
                   content={
                     <>
-                      <p>Liczba przetrwanych krachow rynkowych.</p>
-                      <p className="mt-2 text-slate-400">Wymagane do:</p>
+                      <p>Number of market crashes survived.</p>
+                      <p className="mt-2 text-slate-400">Required for:</p>
                       <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Tier 5: 2 przetrwane krachy</li>
-                        <li>Prestige: 3 przetrwane krachy</li>
+                        <li>Tier 5: 2 crashes survived</li>
+                        <li>Prestige: 3 crashes survived</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Krachy przetrwane</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">Crashes Survived</p>
                 <p className="text-xl md:text-2xl font-bold text-purple-400">{crashesSurvived}</p>
               </div>
             </div>
@@ -904,12 +824,12 @@ export function Dashboard({ initialState }: DashboardProps) {
               <div className="bg-slate-900 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium">Konserwacja maszyn</p>
+                    <p className="text-white font-medium">Machine Maintenance</p>
                     <p className="text-slate-400 text-sm">
-                      Kondycja: <span className={machineCondition >= 80 ? "text-green-400" : machineCondition >= 50 ? "text-yellow-400" : "text-red-400"}>
+                      Condition: <span className={machineCondition >= 80 ? "text-green-400" : machineCondition >= 50 ? "text-yellow-400" : "text-red-400"}>
                         {machineCondition.toFixed(0)}%
                       </span>
-                      {machineCondition < 80 && " - produkcja zmniejszona!"}
+                      {machineCondition < 80 && " - production reduced!"}
                     </p>
                   </div>
                   <Button
@@ -919,7 +839,7 @@ export function Dashboard({ initialState }: DashboardProps) {
                     variant={machineCondition < 100 && money >= currentTier * 100 ? "default" : "outline"}
                     className={machineCondition >= 100 || money < currentTier * 100 ? "text-slate-400" : ""}
                   >
-                    Napraw (+20%) - ${currentTier * 100}
+                    Repair (+20%) - ${currentTier * 100}
                   </Button>
                 </div>
                 <Progress value={machineCondition} className="h-2 mt-3" />
@@ -933,6 +853,82 @@ export function Dashboard({ initialState }: DashboardProps) {
               <PublishButton pathColor={pathInfo.color} />
             </div>
           )}
+
+          {/* Next tier progress - moved up for Stats tab */}
+          {nextTier && (
+            <div className="bg-slate-900 rounded-lg p-4">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm text-slate-400">
+                  Progress to <span className="text-white font-semibold">Tier {nextTier.id}: {nextTier.name}</span>
+                </p>
+                <p className="text-sm text-slate-500">{Math.round(tierProgress)}%</p>
+              </div>
+              <Progress value={tierProgress} className="h-2 mb-3" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                {tierRequirementsDisplay.map((req) => {
+                  const formatValue = (value: number, key: string) => {
+                    if (key === "minRating") {
+                      return getCreditRatingFromValue(value);
+                    }
+                    return formatMoney(value);
+                  };
+
+                  return (
+                    <div
+                      key={req.key}
+                      className={`flex justify-between px-2 py-1 rounded ${
+                        req.met ? "bg-green-900/30 text-green-400" : "bg-slate-800 text-slate-400"
+                      }`}
+                    >
+                      <span>{req.label}:</span>
+                      <span>
+                        {formatValue(req.current, req.key)} / {formatValue(req.required, req.key)}
+                        {req.met && " ✓"}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {buildingRequirements && (
+                <div className="mt-3 pt-3 border-t border-slate-700">
+                  <p className="text-xs text-slate-500 mb-2">
+                    {buildingRequirements.type === "any"
+                      ? "One of these buildings required:"
+                      : "All buildings required:"}
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                    {buildingRequirements.requirements.map((req) => (
+                      <div
+                        key={req.id}
+                        className={`flex justify-between px-2 py-1 rounded ${
+                          req.met ? "bg-green-900/30 text-green-400" : "bg-slate-800 text-slate-400"
+                        }`}
+                      >
+                        <span>{req.name}:</span>
+                        <span>
+                          {req.current} / {req.required}
+                          {req.met && " ✓"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  {buildingRequirements.met && (
+                    <p className="text-green-400 text-xs mt-1">
+                      {buildingRequirements.type === "any" ? "Requirement met!" : "All requirements met!"}
+                    </p>
+                  )}
+                </div>
+              )}
+              {upgradeError && <p className="text-red-400 text-sm mt-2">{upgradeError}</p>}
+            </div>
+          )}
+        </div>
+        </div>
+        {/* END STATS TAB CONTENT */}
+
+        {/* ACTIONS TAB CONTENT - visible on mobile actions tab or always on desktop */}
+        <div className={`${mobileTab !== "actions" ? "hidden md:block" : ""}`}>
+        <div className="bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700">
 
           {/* Synergy panel for Media path (Tier 2+) */}
           {path === "MEDIA" && currentTier >= 2 && (
@@ -986,78 +982,12 @@ export function Dashboard({ initialState }: DashboardProps) {
           {path === "FINANCE" && currentTier >= 4 && (
             <PrestigePanel pathColor={pathInfo.color} />
           )}
-
-          {/* Next tier progress */}
-          {nextTier && (
-            <div className="bg-slate-900 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-sm text-slate-400">
-                  Postep do <span className="text-white font-semibold">Tier {nextTier.id}: {nextTier.name}</span>
-                </p>
-                <p className="text-sm text-slate-500">{Math.round(tierProgress)}%</p>
-              </div>
-              <Progress value={tierProgress} className="h-2 mb-3" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                {tierRequirementsDisplay.map((req) => {
-                  // Special formatting for credit rating
-                  const formatValue = (value: number, key: string) => {
-                    if (key === "minRating") {
-                      return getCreditRatingFromValue(value);
-                    }
-                    return formatMoney(value);
-                  };
-
-                  return (
-                    <div
-                      key={req.key}
-                      className={`flex justify-between px-2 py-1 rounded ${
-                        req.met ? "bg-green-900/30 text-green-400" : "bg-slate-800 text-slate-400"
-                      }`}
-                    >
-                      <span>{req.label}:</span>
-                      <span>
-                        {formatValue(req.current, req.key)} / {formatValue(req.required, req.key)}
-                        {req.met && " \u2713"}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Building requirements */}
-              {buildingRequirements && (
-                <div className="mt-3 pt-3 border-t border-slate-700">
-                  <p className="text-xs text-slate-500 mb-2">
-                    {buildingRequirements.type === "any"
-                      ? "Wymagany jeden z budynków:"
-                      : "Wymagane wszystkie budynki:"}
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                    {buildingRequirements.requirements.map((req) => (
-                      <div
-                        key={req.id}
-                        className={`flex justify-between px-2 py-1 rounded ${
-                          req.met ? "bg-green-900/30 text-green-400" : "bg-slate-800 text-slate-400"
-                        }`}
-                      >
-                        <span>{req.name}:</span>
-                        <span>
-                          {req.current} / {req.required}
-                          {req.met && " ✓"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  {buildingRequirements.met && (
-                    <p className="text-green-400 text-xs mt-1">
-                      {buildingRequirements.type === "any" ? "Warunek spelniony!" : "Wszystkie spelnione!"}
-                    </p>
-                  )}
-                </div>
-              )}
-              {upgradeError && <p className="text-red-400 text-sm mt-2">{upgradeError}</p>}
-            </div>
-          )}
         </div>
+        </div>
+        {/* END ACTIONS TAB CONTENT */}
+
+        {/* BUILDINGS TAB CONTENT - visible on mobile buildings tab or always on desktop */}
+        <div className={`${mobileTab !== "buildings" ? "hidden md:block" : ""}`}>
 
         {/* Tier tabs */}
         <div className="mb-4">
@@ -1126,10 +1056,13 @@ export function Dashboard({ initialState }: DashboardProps) {
               Tier {selectedTier}: {getTierDefinition(selectedTier, path)?.name}
             </h3>
             <p className="text-slate-500">
-              Odblokuj Tier {selectedTier} aby uzyskac dostep do tych budynkow
+              Unlock Tier {selectedTier} to access these buildings
             </p>
           </div>
         )}
+        </div>
+        {/* END BUILDINGS TAB CONTENT */}
+
       </div>
     </>
   );

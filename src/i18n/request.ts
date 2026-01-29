@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 export const locales = ["pl", "en", "de"] as const;
 export type Locale = (typeof locales)[number];
-export const defaultLocale: Locale = "pl";
+export const defaultLocale: Locale = "en";
 
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();

@@ -1249,3 +1249,79 @@ export async function claimAllAchievements(): Promise<{
 
   return { success: true, totalReward, newMoney, claimedCount: unclaimed.length };
 }
+
+// ============ DISPLAY NAME ============
+
+/**
+ * Check if user needs to set display name (new Google users)
+ */
+export async function checkNeedsDisplayName(): Promise<boolean> {
+  const session = await auth();
+  if (!session?.user?.id) return false;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { displayNameSet: true },
+  });
+
+  return user?.displayNameSet === false;
+}
+
+/**
+ * Get current user's display name
+ */
+export async function getCurrentDisplayName(): Promise<string | null> {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true },
+  });
+
+  return user?.name || null;
+}
+
+/**
+ * Set display name for user
+ */
+export async function setDisplayName(
+  name: string
+): Promise<{ success: boolean; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Nie jestes zalogowany" };
+  }
+
+  // Trim whitespace
+  const trimmedName = name.trim();
+
+  // Validation
+  if (trimmedName.length < 2) {
+    return { success: false, error: "Nazwa musi miec minimum 2 znaki" };
+  }
+
+  if (trimmedName.length > 20) {
+    return { success: false, error: "Nazwa moze miec maksymalnie 20 znakow" };
+  }
+
+  // Basic profanity filter (can be expanded)
+  const blockedWords = ["kurwa", "chuj", "pierdol", "jebac", "cipa", "dupa"];
+  const lowerName = trimmedName.toLowerCase();
+  for (const word of blockedWords) {
+    if (lowerName.includes(word)) {
+      return { success: false, error: "Nazwa zawiera niedozwolone slowa" };
+    }
+  }
+
+  // Update user
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      name: trimmedName,
+      displayNameSet: true,
+    },
+  });
+
+  return { success: true };
+}

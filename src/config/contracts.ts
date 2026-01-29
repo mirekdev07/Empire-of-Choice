@@ -43,9 +43,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "sponsor_small",
       type: "sponsor",
-      name: "Mały sponsoring",
-      description: "Wspomnij o produkcie w swoim contencie",
-      duration: 60, // 1 minute for testing (normally would be longer)
+      name: "Small Sponsorship",
+      description: "Mention the product in your content",
+      duration: 60,
       reward: { money: 500, reputation: 3 },
       penalty: { reputation: 5 },
       requirement: { minReputation: 20, minTier: 1 },
@@ -53,8 +53,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "sponsor_medium",
       type: "sponsor",
-      name: "Sponsoring średni",
-      description: "Dedykowany post sponsorowany",
+      name: "Medium Sponsorship",
+      description: "Dedicated sponsored post",
       duration: 120,
       reward: { money: 2000, reputation: 5 },
       penalty: { reputation: 8 },
@@ -63,8 +63,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "sponsor_large",
       type: "sponsor",
-      name: "Duży kontrakt sponsorski",
-      description: "Seria postów sponsorowanych",
+      name: "Large Sponsor Contract",
+      description: "Series of sponsored posts",
       duration: 300,
       reward: { money: 10000, reputation: 10, followers: 500 },
       penalty: { reputation: 15 },
@@ -75,9 +75,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "longterm_starter",
       type: "long_term",
-      name: "Umowa początkowa",
-      description: "Miesięczna współpraca z marką",
-      duration: 180, // 3 minutes for testing
+      name: "Starter Agreement",
+      description: "Monthly partnership with a brand",
+      duration: 180,
       reward: { money: 5000, reputation: 8 },
       penalty: { reputation: 10 },
       requirement: { minReputation: 40, minTier: 2 },
@@ -85,8 +85,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "longterm_pro",
       type: "long_term",
-      name: "Umowa profesjonalna",
-      description: "Kwartalna współpraca z dużą marką",
+      name: "Professional Agreement",
+      description: "Quarterly partnership with a big brand",
       duration: 300,
       reward: { money: 20000, reputation: 15, followers: 1000 },
       penalty: { reputation: 15 },
@@ -95,8 +95,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "longterm_exclusive",
       type: "long_term",
-      name: "Umowa ekskluzywna",
-      description: "Roczna ekskluzywna współpraca",
+      name: "Exclusive Agreement",
+      description: "Yearly exclusive partnership",
       duration: 600,
       reward: { money: 100000, reputation: 25, followers: 5000 },
       penalty: { reputation: 25 },
@@ -107,8 +107,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "collab_small",
       type: "collaboration",
-      name: "Mała kolaboracja",
-      description: "Wspólny post z innym twórcą",
+      name: "Small Collaboration",
+      description: "Joint post with another creator",
       duration: 60,
       reward: { money: 300, reputation: 2, followers: 200 },
       penalty: { reputation: 3 },
@@ -117,8 +117,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "collab_video",
       type: "collaboration",
-      name: "Wspólne wideo",
-      description: "Nagranie z popularnym twórcą",
+      name: "Joint Video",
+      description: "Recording with a popular creator",
       duration: 120,
       reward: { money: 1000, reputation: 5, followers: 1000 },
       penalty: { reputation: 5 },
@@ -127,8 +127,8 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "collab_series",
       type: "collaboration",
-      name: "Seria kolaboracji",
-      description: "Cykl wspólnych materiałów",
+      name: "Collaboration Series",
+      description: "Series of joint content",
       duration: 300,
       reward: { money: 5000, reputation: 10, followers: 5000 },
       penalty: { reputation: 10 },
@@ -140,9 +140,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "production_local",
       type: "production",
-      name: "Zamówienie lokalne",
-      description: "Małe zamówienie od lokalnego klienta",
-      duration: 60, // 1 minute
+      name: "Local Order",
+      description: "Small order from a local client",
+      duration: 60,
       reward: { money: 500, reputation: 2 },
       penalty: { reputation: 3, efficiency: 5 },
       requirement: { minTier: 1 },
@@ -151,9 +151,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "production_regional",
       type: "production",
-      name: "Kontrakt regionalny",
-      description: "Zamówienie od regionalnego dystrybutora",
-      duration: 180, // 3 minutes
+      name: "Regional Contract",
+      description: "Order from a regional distributor",
+      duration: 180,
       reward: { money: 3000, reputation: 5 },
       penalty: { reputation: 5, efficiency: 10 },
       requirement: { minTier: 2, minResources: 200 },
@@ -162,9 +162,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "production_national",
       type: "production",
-      name: "Umowa krajowa",
-      description: "Duże zamówienie dla sieci sklepów",
-      duration: 300, // 5 minutes
+      name: "National Contract",
+      description: "Large order for retail chain",
+      duration: 300,
       reward: { money: 15000, reputation: 10 },
       penalty: { reputation: 10, efficiency: 15 },
       requirement: { minTier: 3, minResources: 1000, minEfficiency: 70 },
@@ -173,9 +173,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "production_government",
       type: "production",
-      name: "Kontrakt rządowy",
-      description: "Zamówienie publiczne od rządu",
-      duration: 600, // 10 minutes
+      name: "Government Contract",
+      description: "Public sector order from government",
+      duration: 600,
       reward: { money: 100000, reputation: 20, efficiency: 5 },
       penalty: { reputation: 15, efficiency: 20 },
       requirement: { minTier: 4, minResources: 5000, minEfficiency: 80 },
@@ -184,9 +184,9 @@ export const CONTRACT_TEMPLATES: Record<ContractType, Contract[]> = {
     {
       id: "production_international",
       type: "production",
-      name: "Umowa międzynarodowa",
-      description: "Eksport do zagranicznych partnerów",
-      duration: 900, // 15 minutes
+      name: "International Contract",
+      description: "Export to foreign partners",
+      duration: 900,
       reward: { money: 500000, reputation: 30, resources: 10000 },
       penalty: { reputation: 20, efficiency: 25 },
       requirement: { minTier: 5, minResources: 20000, minEfficiency: 90 },
