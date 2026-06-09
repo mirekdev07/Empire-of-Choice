@@ -1,6 +1,6 @@
 # Empire of Choice — Tycoon Idle Game
 
-Idle / strategiczna gra zarządzania imperium. Trzy ścieżki rozwoju (Media, Przemysł, Finanse), system kontraktów, eventów, prestige, ranking, wielojęzyczność. Aplikacja webowa (Next.js) z buildem mobilnym na Android + integracja Google Play Games.
+Idle / strategic empire-management game. Three development paths (Media, Industrial, Finance), contracts, events, prestige, ranking, full localization. Web app built with Next.js, with an Android mobile build + Google Play Games integration.
 
 **Live:** https://empire-of-choice.vercel.app
 
@@ -16,57 +16,57 @@ Idle / strategiczna gra zarządzania imperium. Trzy ścieżki rozwoju (Media, Pr
 
 ## Status
 
-| Funkcja | Status |
+| Feature | Status |
 |---------|--------|
-| Ścieżka Media | ✅ Kompletna |
-| Ścieżka Industrial | ✅ Kompletna |
-| Ścieżka Finance | ✅ Kompletna |
-| System osiągnięć (65 achievementów) | ✅ |
-| Ranking graczy | ✅ |
-| Wielojęzyczność (PL, EN, DE) | ✅ |
-| Zarobki offline | ✅ |
-| System kontraktów | ✅ |
-| System eventów | ✅ |
-| System prestige | ✅ |
-| Autentykacja (email + Google) | ✅ |
-| Build Android + Google Play Games | ✅ |
+| Media path | ✅ Complete |
+| Industrial path | ✅ Complete |
+| Finance path | ✅ Complete |
+| Achievement system (65 achievements) | ✅ |
+| Player ranking | ✅ |
+| Localization (PL, EN, DE) | ✅ |
+| Offline earnings | ✅ |
+| Contract system | ✅ |
+| Event system | ✅ |
+| Prestige system | ✅ |
+| Authentication (email + Google) | ✅ |
+| Android build + Google Play Games | ✅ |
 
 ---
 
-## Funkcjonalności
+## Features
 
-### Główne systemy
+### Core systems
 
-- **3 ścieżki rozwoju** — Media, Przemysł, Finanse
-- **5 tierów** — od małego startupu do imperium
-- **65 osiągnięć** — z nagrodami pieniężnymi
-- **Ranking graczy** — dla każdej ścieżki osobno
-- **System kontraktów** — zlecenia z nagrodami
-- **System eventów** — losowe wydarzenia wymagające wyborów
-- **System prestige** — reset z permanentnymi bonusami
-- **Do 5 zapisów gry** — na użytkownika
-- **Zarobki offline** — do 8 godzin (20% produkcji), heartbeat system
+- **3 development paths** — Media, Industrial, Finance
+- **5 tiers** — from small startup to empire
+- **65 achievements** — with cash rewards
+- **Player ranking** — separate per path
+- **Contract system** — jobs with rewards
+- **Event system** — random events requiring choices
+- **Prestige system** — reset with permanent bonuses
+- **Up to 5 save slots** — per user
+- **Offline earnings** — up to 8 hours (20% production), heartbeat system
 
-### Ścieżka Media
+### Media path
 
-Content Decay (produkcja spada bez publikowania) • Followers (druga waluta) • Morale zespołu (Tier 3+) • Synergie budynków (Tier 2+).
+Content Decay (production drops without publishing) • Followers (secondary currency) • Team Morale (Tier 3+) • Building synergies (Tier 2+).
 
-### Ścieżka Industrial
+### Industrial path
 
-Surowce konsumowane przez produkcję • Efektywność 0-150% • Kondycja maszyn 0-100% • R&D (bonusy efektywności).
+Raw materials consumed by production • Efficiency 0-150% • Machine condition 0-100% • R&D (efficiency bonuses).
 
-### Ścieżka Finance
+### Finance path
 
-AUM (Assets Under Management) • Rating kredytowy (D do AAA) • Dźwignia 1x-20x • Fazy rynku (bull/stable/correction/bear/crash) • Hedging (Tier 3+).
+AUM (Assets Under Management) • Credit rating (D to AAA) • Leverage 1x-20x • Market phases (bull / stable / correction / bear / crash) • Hedging (Tier 3+).
 
 ---
 
 ## Stack
 
 - **Next.js 16** (App Router, Server Actions) + React 19 + TypeScript
-- **Prisma 7** ORM + **PostgreSQL** (Neon serverless lub lokalny Postgres przez docker-compose)
+- **Prisma 7** ORM + **PostgreSQL** (Neon serverless or local Postgres via docker-compose)
 - **NextAuth v5** + Google OAuth
-- **Zustand** (`useGameStore`) — stan klienta
+- **Zustand** (`useGameStore`) — client state
 - **Tailwind CSS** + **shadcn/ui**
 - **next-intl** — i18n (PL / EN / DE)
 - **Capacitor 8** + Google Play Games Plugin (Android)
@@ -77,16 +77,16 @@ AUM (Assets Under Management) • Rating kredytowy (D do AAA) • Dźwignia 1x-2
 ## Quick start
 
 ```bash
-git clone https://github.com/<user>/empire-of-choice.git
-cd empire-of-choice
+git clone https://github.com/mirekdev07/Empire-of-Choice.git
+cd Empire-of-Choice
 npm install
 
 cp .env.example .env
-# Wypełnij: DATABASE_URL, AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+# Fill in: DATABASE_URL, AUTH_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
-# Opcja A — lokalny Postgres przez Docker
+# Option A — local Postgres via Docker
 docker-compose up -d
-# Opcja B — Neon serverless (wklej DATABASE_URL z Neon do .env)
+# Option B — Neon serverless (paste DATABASE_URL from Neon into .env)
 
 npx prisma generate
 npx prisma db push
@@ -94,24 +94,24 @@ npx prisma db push
 npm run dev
 ```
 
-Otwórz http://localhost:3000.
+Open http://localhost:3000.
 
 ---
 
-## Skrypty
+## Scripts
 
-| Komenda | Opis |
+| Command | Description |
 | --- | --- |
 | `npm run dev` | Start dev |
 | `npm run build` | Build (Prisma generate → db push → next build) |
 | `npm run start` | Production server |
 | `npm run lint` | ESLint |
 | `npm run cap:sync` | Capacitor → Android |
-| `npm run cap:open` | Otwiera w Android Studio |
+| `npm run cap:open` | Open in Android Studio |
 
 ---
 
-## Build mobilny (Android)
+## Mobile build (Android)
 
 ```bash
 npm run build
@@ -119,55 +119,55 @@ npm run cap:sync
 npm run cap:open
 ```
 
-Konfiguracja: `capacitor.config.ts`. App ID: `com.empireofchoice.game`. Gra wykorzystuje **Google Play Games Services** — wymaga konfiguracji w Google Play Console (Web Client ID musi być w `android/app/src/main/res/values/strings.xml`).
+Configuration: `capacitor.config.ts`. App ID: `com.empireofchoice.game`. The game uses **Google Play Games Services** — requires setup in Google Play Console (Web Client ID must be in `android/app/src/main/res/values/strings.xml`).
 
-**Uwaga:** `*.jks`, `*.keystore`, `*.apk`, `*.aab` są w `.gitignore` — keystore podpisujący release **nigdy** nie idzie do repo.
+**Note:** `*.jks`, `*.keystore`, `*.apk`, `*.aab` are in `.gitignore` — the release-signing keystore **never** goes into the repo.
 
 ---
 
-## Struktura projektu
+## Project structure
 
 ```
 src/
 ├── app/
 │   ├── page.tsx           # Landing
-│   ├── auth/              # Logowanie/rejestracja
-│   ├── saves/             # Wybór zapisów
-│   ├── dashboard/         # Główny widok gry
-│   ├── achievements/      # Osiągnięcia
-│   ├── ranking/           # Ranking graczy
-│   ├── setup-profile/     # Setup po pierwszym logowaniu
-│   ├── privacy/           # Polityka prywatności (Play Store)
+│   ├── auth/              # Login/register
+│   ├── saves/             # Save slot selection
+│   ├── dashboard/         # Main game view
+│   ├── achievements/      # Achievements
+│   ├── ranking/           # Leaderboard
+│   ├── setup-profile/     # First-login setup
+│   ├── privacy/           # Privacy policy (Play Store requirement)
 │   └── api/
 │       ├── auth/          # NextAuth + play-games
-│       └── save/          # Sync sejwów
+│       └── save/          # Save sync
 ├── actions/               # Server Actions
 ├── components/            # FinancePanel, Sidebar, LanguageSwitcher, SaveSwitcher, ...
-├── config/                # gamedata.ts (firmy, eventy, koszty, achievements, contracts, prestige)
-├── i18n/                  # Konfiguracja i18n
-├── messages/              # Tłumaczenia (pl / en / de)
+├── config/                # gamedata.ts (companies, events, costs, achievements, contracts, prestige)
+├── i18n/                  # i18n configuration
+├── messages/              # Translations (pl / en / de)
 ├── store/                 # useGameStore (Zustand)
 ├── plugins/               # PlayGamesPlugin (Capacitor)
-├── lib/                   # getUser, util
+├── lib/                   # getUser, utils
 └── types/
 
 prisma/
 └── schema.prisma          # Users, Saves, Achievements, Rankings
 
-android/                   # Wygenerowane przez Capacitor
-docker-compose.yml         # Lokalny Postgres + pgAdmin
+android/                   # Generated by Capacitor
+docker-compose.yml         # Local Postgres + pgAdmin
 ```
 
 ---
 
-## Docker — lokalny Postgres
+## Docker — local Postgres
 
-`docker-compose up -d` postawi:
+`docker-compose up -d` brings up:
 
-- **Postgres 15** na `localhost:5432`
-- **pgAdmin** na [http://localhost:5050](http://localhost:5050)
+- **Postgres 15** on `localhost:5432`
+- **pgAdmin** at [http://localhost:5050](http://localhost:5050)
 
-Dane do logowania zmień w `docker-compose.yml` przed wystawieniem czegokolwiek na zewnątrz.
+Change the credentials in `docker-compose.yml` before exposing anything externally.
 
 ---
 
@@ -179,19 +179,19 @@ Production: **Vercel** + Neon PostgreSQL + Google OAuth.
 vercel --prod
 ```
 
-Wszystkie zmienne (`GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, `DATABASE_URL`) — w panelu Vercel.
+All environment variables (`GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, `DATABASE_URL`) — in the Vercel dashboard.
 
 ---
 
 ## TODO
 
-- [ ] Efekty dźwiękowe
-- [ ] Ulepszenia mobilne
-- [ ] Więcej języków (FR, ES)
+- [ ] Sound effects
+- [ ] Mobile UX improvements
+- [ ] More languages (FR, ES)
 - [ ] Dark/Light mode toggle
 
 ---
 
-## Licencja
+## License
 
-Projekt portfolio / prywatny.
+Portfolio / private project.
