@@ -194,4 +194,4 @@ All environment variables (`GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, `DATABASE_URL`
 
 ## License
 
-Portfolio / private project.
+**MIT** — see [LICENSE](./LICENSE). Free to use, modify, and distribute, including commercially.
