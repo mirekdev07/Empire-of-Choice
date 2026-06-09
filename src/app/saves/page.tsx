@@ -8,33 +8,19 @@ import { PathType } from "@/config/gamedata";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatMoney } from "@/lib/engine";
+import { useTranslations } from "next-intl";
 
-const paths: { id: PathType; name: string; icon: string; color: string; description: string }[] = [
-  {
-    id: "MEDIA",
-    name: "Media",
-    icon: "🎬",
-    color: "purple",
-    description: "Followers, contracts, events",
-  },
-  {
-    id: "INDUSTRIAL",
-    name: "Industrial",
-    icon: "🏭",
-    color: "orange",
-    description: "Stable production",
-  },
-  {
-    id: "FINANCE",
-    name: "Finance",
-    icon: "💹",
-    color: "green",
-    description: "Risk and profits",
-  },
+const pathsConfig: { id: PathType; icon: string; color: string }[] = [
+  { id: "MEDIA", icon: "🎬", color: "purple" },
+  { id: "INDUSTRIAL", icon: "🏭", color: "orange" },
+  { id: "FINANCE", icon: "💹", color: "green" },
 ];
 
 export default function SavesPage() {
   const router = useRouter();
+  const t = useTranslations("saves");
+  const tPaths = useTranslations("paths");
+  const tCommon = useTranslations("common");
   const [saves, setSaves] = useState<SaveInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showNewSave, setShowNewSave] = useState(false);
@@ -115,7 +101,7 @@ export default function SavesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-white text-xl">Loading saves...</div>
+        <div className="text-white text-xl">{tCommon("loading")}</div>
       </div>
     );
   }
@@ -128,14 +114,14 @@ export default function SavesPage() {
           <Link href="/" className="inline-block mb-4">
             <span className="text-5xl">👑</span>
           </Link>
-          <h1 className="text-3xl font-bold text-white mb-2">Your Game Saves</h1>
-          <p className="text-slate-400">Select a save or create new</p>
+          <h1 className="text-3xl font-bold text-white mb-2">{t("title")}</h1>
+          <p className="text-slate-400">{t("subtitle")}</p>
         </div>
 
         {/* Existing saves */}
         {saves.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-white mb-4">Continue Game</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">{t("continueGame")}</h2>
             <div className="grid gap-4">
               {saves.map((save) => {
                 const color = getPathColor(save.path);
@@ -158,14 +144,14 @@ export default function SavesPage() {
                           <div>
                             <h3 className="text-white font-semibold text-lg">{save.name}</h3>
                             <div className="flex items-center gap-3 text-sm text-slate-400">
-                              <span>Tier {save.currentTier}</span>
+                              <span>{t("tier")} {save.currentTier}</span>
                               <span>•</span>
                               <span>${formatMoney(save.money)}</span>
                               <span>•</span>
-                              <span>{formatMoney(save.followers)} followers</span>
+                              <span>{formatMoney(save.followers)} {t("followers")}</span>
                             </div>
                             <p className="text-xs text-slate-500 mt-1">
-                              Last played: {formatDate(save.lastPlayedAt)}
+                              {t("lastPlayed")}: {formatDate(save.lastPlayedAt)}
                             </p>
                           </div>
                         </div>
@@ -181,7 +167,7 @@ export default function SavesPage() {
                                   handleDeleteSave(save.id);
                                 }}
                               >
-                                Confirm
+                                {tCommon("confirm")}
                               </Button>
                               <Button
                                 size="sm"
@@ -191,7 +177,7 @@ export default function SavesPage() {
                                   setDeleteConfirm(null);
                                 }}
                               >
-                                Cancel
+                                {tCommon("cancel")}
                               </Button>
                             </>
                           ) : (
@@ -204,7 +190,7 @@ export default function SavesPage() {
                                   handleSelectSave(save.id);
                                 }}
                               >
-                                Play
+                                {t("play")}
                               </Button>
                               <Button
                                 size="sm"
@@ -238,27 +224,27 @@ export default function SavesPage() {
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
               >
-                + New Game Save
+                {t("newGameSave")}
               </Button>
             ) : (
-              <p className="text-slate-500">5 saves limit reached</p>
+              <p className="text-slate-500">{t("limitReached")}</p>
             )}
           </div>
         ) : (
           <Card className="bg-slate-800/80 border-slate-700">
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">New Save</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">{t("newSave")}</h2>
 
               {/* Save name */}
               <div className="mb-6">
                 <label className="block text-sm text-slate-400 mb-2">
-                  Save name (optional)
+                  {t("saveNameOptional")}
                 </label>
                 <input
                   type="text"
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}
-                  placeholder="e.g. My Media Empire"
+                  placeholder={t("saveNamePlaceholder")}
                   className="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -266,10 +252,10 @@ export default function SavesPage() {
               {/* Path selection */}
               <div className="mb-6">
                 <label className="block text-sm text-slate-400 mb-3">
-                  Choose your path
+                  {t("choosePath")}
                 </label>
                 <div className="grid md:grid-cols-3 gap-4">
-                  {paths.map((path) => (
+                  {pathsConfig.map((path) => (
                     <button
                       key={path.id}
                       onClick={() => setSelectedPath(path.id)}
@@ -283,9 +269,9 @@ export default function SavesPage() {
                       <h3 className={`font-semibold ${
                         selectedPath === path.id ? `text-${path.color}-400` : "text-white"
                       }`}>
-                        {path.name}
+                        {tPaths(`${path.id}.name`)}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-1">{path.description}</p>
+                      <p className="text-xs text-slate-400 mt-1">{tPaths(`${path.id}.shortDesc`)}</p>
                     </button>
                   ))}
                 </div>
@@ -298,7 +284,7 @@ export default function SavesPage() {
                   disabled={!selectedPath || isCreating}
                   className="flex-1 bg-gradient-to-r from-purple-600 to-orange-600 hover:from-purple-700 hover:to-orange-700"
                 >
-                  {isCreating ? "Creating..." : "Start Game"}
+                  {isCreating ? t("creating") : t("startGame")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -309,7 +295,7 @@ export default function SavesPage() {
                   variant="outline"
                   className="border-slate-600"
                 >
-                  Cancel
+                  {tCommon("cancel")}
                 </Button>
               </div>
             </CardContent>
@@ -319,7 +305,7 @@ export default function SavesPage() {
         {/* Back link */}
         <div className="text-center mt-8">
           <Link href="/" className="text-slate-400 hover:text-white transition-colors">
-            ← Back to homepage
+            {t("backToHomepage")}
           </Link>
         </div>
       </div>

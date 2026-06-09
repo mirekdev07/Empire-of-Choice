@@ -23,10 +23,48 @@
     "subtitle": "Tycoon Idle Game"
   },
   "landing": {
-    "heroTitle": "Baue dein Imperium",
-    "heroSubtitle": "Wähle deinen Weg zum Erfolg in diesem süchtig machenden Idle Tycoon Spiel",
+    "loading": "Wird geladen...",
+    "redirecting": "Weiterleitung...",
+    "heroTitle": "Empire of Choice",
+    "heroSubtitle": "Tycoon Idle Game",
+    "heroDesc": "Wähle deinen Weg und baue ein Geschäftsimperium auf. Verwalte Ressourcen, steige durch 5 Stufen auf und werde eine Legende in deiner Branche.",
     "startPlaying": "Spiel starten",
+    "playForFree": "Kostenlos spielen",
     "login": "Anmelden",
+    "devPaths": "Entwicklungspfade",
+    "progressionTiers": "Aufstiegsstufen",
+    "prestigeSystem": "Prestige-System",
+    "choosePath": "Wähle deinen Weg",
+    "choosePathDesc": "Jeder Weg bietet einzigartige Mechaniken und Herausforderungen. Wähle den, der zu deinem Spielstil passt.",
+    "gameFeatures": "Spielfunktionen",
+    "tierSystem": "Stufensystem",
+    "tierSystemDesc": "Steige durch 5 Level auf, schalte neue Gebäude und Fähigkeiten frei",
+    "contracts": "Verträge",
+    "contractsDesc": "Nimm Aufträge von Sponsoren an und arbeite mit anderen Creatorn zusammen",
+    "prestige": "Prestige",
+    "prestigeDesc": "Verkaufe dein Imperium und starte mit permanenten Boni von vorne",
+    "events": "Events",
+    "eventsDesc": "Zufällige Ereignisse, die dein Spiel beeinflussen - Viralhits, Skandale und mehr",
+    "readyToBuild": "Bereit, dein Imperium aufzubauen?",
+    "joinNow": "Tritt jetzt bei und beginne deine Reise zum Erfolg. Das Spiel ist komplett kostenlos!",
+    "easy": "Einfach",
+    "medium": "Mittel",
+    "hard": "Schwer",
+    "pathIndustrial": {
+      "name": "Industrie",
+      "desc": "Baue ein Industrieimperium von einer kleinen Garage zu riesigen Mega-Komplexen auf.",
+      "features": ["Stabile und vorhersehbare Produktion", "Perfekt für Anfänger", "Fabriken, Stahlwerke, Raffinerien", "Keine zufälligen Modifikatoren"]
+    },
+    "pathMedia": {
+      "name": "Medien & Unterhaltung",
+      "desc": "Werde Influencer und baue dein Medienimperium vom Blog zum globalen TV-Netzwerk auf.",
+      "features": ["Follower- und Rufsystem", "Sponsoringverträge und Kooperationen", "Virale Events und Skandale", "5 Karriere-Entwicklungsstufen"]
+    },
+    "pathFinance": {
+      "name": "Finanzen",
+      "desc": "Investiere an der Börse und verwalte Fonds, um ein Finanzimperium aufzubauen.",
+      "features": ["Dynamischer Marktmultiplikator (0.5x - 2.0x)", "Hohes Risiko, hohe Belohnung", "Aktien, Fonds, Hedgefonds", "Kryptowährungsbörse"]
+    },
     "features": {
       "title": "Wähle deinen Weg",
       "media": {
@@ -88,48 +126,69 @@
   "saves": {
     "title": "Deine Spielstände",
     "subtitle": "Wähle einen Spielstand oder erstelle einen neuen",
+    "continueGame": "Spiel fortsetzen",
     "newSave": "Neuer Spielstand",
-    "choosePath": "Weg wählen",
+    "newGameSave": "+ Neuer Spielstand",
+    "choosePath": "Wähle deinen Weg",
     "play": "Spielen",
     "delete": "Löschen",
     "confirmDelete": "Bist du sicher, dass du diesen Spielstand löschen möchtest?",
     "tier": "Stufe",
+    "followers": "Follower",
     "noSaves": "Keine Spielstände. Erstelle einen neuen!",
     "maxSaves": "Maximal 5 Spielstände pro Konto",
+    "limitReached": "Limit von 5 Spielständen erreicht",
     "lastPlayed": "Zuletzt gespielt",
-    "created": "Erstellt"
+    "created": "Erstellt",
+    "saveNameOptional": "Spielstand-Name (optional)",
+    "saveNamePlaceholder": "z.B. Mein Medien-Imperium",
+    "creating": "Wird erstellt...",
+    "startGame": "Spiel starten",
+    "backToHomepage": "← Zurück zur Startseite"
   },
   "paths": {
     "MEDIA": {
       "name": "Medien",
-      "description": "Baue ein Social Media Imperium auf"
+      "description": "Baue ein Social Media Imperium auf",
+      "shortDesc": "Follower, Verträge, Events"
     },
     "INDUSTRIAL": {
       "name": "Industrie",
-      "description": "Verwalte Fabriken und Produktion"
+      "description": "Verwalte Fabriken und Produktion",
+      "shortDesc": "Stabile Produktion"
     },
     "FINANCE": {
       "name": "Finanzen",
-      "description": "Investiere und verwalte Kapital"
+      "description": "Investiere und verwalte Kapital",
+      "shortDesc": "Risiko und Gewinne"
     }
   },
   "dashboard": {
+    "noActions": {
+      "title": "Keine Aktionen verfügbar",
+      "description": "Erweitere dein Imperium auf Tier 2, um Verträge, Synergien und andere Funktionen freizuschalten."
+    },
     "welcomeBack": "Willkommen zurück!",
     "offlineEarnings": "Während deiner Abwesenheit hast du verdient:",
     "offlineButton": "Super!",
     "collectOffline": "Offline-Einnahmen sammeln",
     "collecting": "Sammeln...",
+    "loading": "Spiel wird geladen...",
     "money": "Geld",
     "perSecond": "/s",
     "followers": "Follower",
+    "followersShort": "Foll.",
+    "resourcesShort": "Res.",
     "reputation": "Ruf",
     "resources": "Ressourcen",
     "efficiency": "Effizienz",
     "machineCondition": "Maschinenzustand",
-    "aum": "Kapital (AUM)",
+    "aum": "AUM",
     "creditRating": "Rating",
     "leverage": "Hebel",
     "marketPhase": "Marktphase",
+    "market": "Markt",
+    "totalEarnings": "Gesamtverdienst",
     "buildings": "Gebäude",
     "buy": "Kaufen",
     "buyX": "{count} kaufen",
@@ -164,7 +223,163 @@
     "reward": "Belohnung",
     "timeLeft": "Verbleibend",
     "autoAccept": "Auto-Annahme",
-    "minReward": "Mind. Belohnung"
+    "minReward": "Mind. Belohnung",
+    "tabStats": "Statistiken",
+    "tabBuildings": "Gebäude",
+    "tabActions": "Aktionen",
+    "progressTo": "Fortschritt zu",
+    "buildingRequiredOne": "Eines dieser Gebäude erforderlich:",
+    "buildingRequiredAll": "Alle Gebäude erforderlich:",
+    "requirementMet": "Anforderung erfüllt!",
+    "allRequirementsMet": "Alle Anforderungen erfüllt!",
+    "machineMaintenance": "Maschinenwartung",
+    "condition": "Zustand",
+    "productionReduced": "Produktion reduziert!",
+    "repair": "Reparieren (+20%)",
+    "hedgingActive": "AKTIV",
+    "hedgingOff": "AUS",
+    "crashesSurvived": "Überlebte Crashs",
+    "unlockTierAccess": "Schalte Stufe {tier} frei, um Zugang zu diesen Gebäuden zu erhalten",
+    "tooltip": {
+      "sources": "Quellen",
+      "multipliers": "Multiplikatoren",
+      "usedFor": "Benötigt für",
+      "effects": "Effekte",
+      "levels": "Stufen",
+      "increases": "Erhöht",
+      "decreases": "Verringert",
+      "requirements": "Anforderungen",
+      "phases": "Phasen",
+      "impact": "Auswirkung",
+      "repair": "Reparatur",
+      "marginCall": "Margin Call",
+      "money": {
+        "desc": "Dein Bargeld für Gebäude und Upgrades.",
+        "buildings": "Gebäude generieren $/s",
+        "contracts": "Verträge geben einmalige Belohnungen",
+        "events": "Events können Bonus oder Strafe geben",
+        "mediaPublish": "Veröffentlichung: +10% für 30s",
+        "mediaSynergy": "Asset-Synergien: bis zu +25%",
+        "mediaMorale": "Team-Moral: 50-120%",
+        "industrialEff": "Effizienz: 0-150%",
+        "industrialMachine": "Maschinenzustand: 0-100%",
+        "industrialResources": "Keine Ressourcen = 0 Produktion",
+        "financeBull": "Bullenmarkt: +35%",
+        "financeStable": "Stabil: normal",
+        "financeBear": "Bärenmarkt: -40%",
+        "financeCrash": "Crash: -70%"
+      },
+      "followers": {
+        "desc": "Deine Social Media Follower.",
+        "buildings": "Gebäude: +Foll./s",
+        "viral": "Viraler Post: +1000",
+        "contracts": "Verträge: Belohnungen",
+        "events": "Positive Events",
+        "tiers": "Stufenfreischaltung",
+        "sponsors": "Bessere Sponsorenangebote",
+        "someContracts": "Einige Verträge"
+      },
+      "aum": {
+        "desc": "Verwaltetes Vermögen (Assets Under Management).",
+        "individual": "Privatkunde: +500$/Kunde",
+        "corporate": "Firmenkunde: +5.000$",
+        "pension": "Pensionsfonds: +50.000$",
+        "sovereign": "Staatsfonds: +500.000$",
+        "commission": "Höheres AUM = höhere Provision",
+        "loss": "Kundenverlust = Rating-Abfall"
+      },
+      "resources": {
+        "desc": "Ressourcen für die Produktion.",
+        "local": "Lokaler Lieferant: +0,5/s",
+        "wholesale": "Großhändler: +2/s",
+        "import": "Import: +5/s",
+        "mine": "Eigene Mine: +20/s",
+        "consumption": "Verbrauch durch Produktionsgebäude",
+        "noResources": "Keine Ressourcen = Produktionsstopp"
+      },
+      "reputation": {
+        "desc": "Dein Branchenruf (0-100).",
+        "publish": "Veröffentlichung: +1 (1min Cooldown)",
+        "milestones": "Meilenstein: +10",
+        "contracts": "Abgeschlossener Vertrag: +2 bis +25",
+        "positiveEvents": "Positive Events",
+        "inactivity": "Inaktivität: -2",
+        "scandals": "Skandal: -15 bis -30",
+        "negativeEvents": "Negative Events"
+      },
+      "creditRating": {
+        "desc": "Deine finanzielle Glaubwürdigkeit (D bis AAA).",
+        "stableProfit": "Stabile Gewinne: +1/5min",
+        "diversification": "Diversifizierung: +1",
+        "lowLeverage": "Niedriger Hebel: +1",
+        "contracts": "Abgeschlossener Vertrag: +1",
+        "losses": "Verluste -10% Kapital: -1",
+        "highLeverage": "Hoher Hebel: -1",
+        "failedContracts": "Gescheiterter Vertrag: -2",
+        "crisis": "Krise: -1 bis -3",
+        "aaaBonus": "AAA: 150% Kunden, 2% Kredite",
+        "dPenalty": "D: Bankrott"
+      },
+      "efficiency": {
+        "desc": "Produktionseffizienz (0-150%).",
+        "modernMachines": "Moderne Maschinen: +5-20%",
+        "trainedWorkers": "Geschulte Arbeiter: +10%",
+        "automation": "Automatisierung: +15-30%",
+        "quality": "Qualitätszertifikate: +5%",
+        "oldMachines": "Alte Maschinen: -10-30%",
+        "breakdowns": "Ausfälle: -20% temp.",
+        "strikes": "Streiks: -50%"
+      },
+      "totalEarnings": {
+        "desc": "Summe aller verdienten Gelder.",
+        "tiers": "Stufenfreischaltung",
+        "prestige": "Prestige-Anforderung: $10M",
+        "points": "Prestige-Punkteberechnung",
+        "note": "Dieser Wert sinkt nie!"
+      },
+      "market": {
+        "desc": "Aktuelle Marktzyklus-Phase.",
+        "bull": "Bull: +35% Gewinne",
+        "stable": "Stabil: normale Gewinne",
+        "correction": "Korrektur: -15% Gewinne",
+        "bear": "Bear: -40% Gewinne",
+        "crash": "Crash: -70% Gewinne",
+        "cycle": "Wechselt alle 2-5 Minuten"
+      },
+      "machineCondition": {
+        "desc": "Technischer Maschinenzustand (0-100%).",
+        "full": "100-80%: volle Effizienz",
+        "reduced10": "80-50%: -10% Produktion",
+        "reduced25": "50-30%: -25% Produktion",
+        "reduced50": "30-0%: -50% Produktion",
+        "manualRepair": "Stufe 1-2: manuell (+20%)",
+        "autoRepair": "Stufe 3+: automatisch"
+      },
+      "leverage": {
+        "desc": "Multipliziert Gewinne und Verluste.",
+        "level1": "1x: 0% Kosten",
+        "level2": "2x: 0,5%/min (Stufe 2+)",
+        "level5": "5x: 1,5%/min (Stufe 3+)",
+        "level10": "10x: 3%/min (Stufe 4+)",
+        "level20": "20x: 5%/min (Stufe 5)",
+        "margin1": "1x: 100% Verlust",
+        "margin2": "2x: 50% Verlust",
+        "margin5": "5x: 20% Verlust",
+        "margin10": "10x: 10% Verlust",
+        "margin20": "20x: 5% Verlust"
+      },
+      "hedging": {
+        "desc": "Schutz gegen Marktvolatilität.",
+        "reduceBull": "Bullenmarkt: -30% Gewinne",
+        "reduceBear": "Bärenmarkt: -20% Verluste",
+        "available": "Verfügbar ab Stufe 3"
+      },
+      "crashesSurvived": {
+        "desc": "Anzahl der überlebten Marktcrashs.",
+        "tier5": "Stufe 5: erfordert 2 Crashs",
+        "prestige": "Prestige: erfordert 3 Crashs"
+      }
+    }
   },
   "achievements": {
     "title": "Erfolge",
@@ -379,7 +594,13 @@
     "progress": "Fortschritt",
     "timeLeft": "Verbleibend",
     "tooltipTitle": "Verträge",
-    "tooltipDesc": "Verträge sind Aufträge mit Belohnungen. Nimm Verträge an, erfülle Anforderungen rechtzeitig und kassiere Belohnung. Achtung - Fristüberschreitung führt zu Strafe!"
+    "tooltipDesc": "Verträge sind Aufträge mit Belohnungen. Nimm Verträge an, erfülle Anforderungen rechtzeitig und kassiere Belohnung. Achtung - Fristüberschreitung führt zu Strafe!",
+    "adBonusActive": "Bonus aktiv!",
+    "slots": "Slots",
+    "watchAdForBonus": "Werbung ansehen für +3 Slots",
+    "watchAd": "Ansehen",
+    "watching": "Lädt...",
+    "watchAdForMore": "Werbung ansehen für mehr Slots"
   },
   "prestige": {
     "title": "Prestige-System",
@@ -471,7 +692,9 @@
     "marketMakingProfit": "MM-Gewinn",
     "activateMarketMaking": "Market Making aktivieren",
     "deactivateMarketMaking": "Market Making deaktivieren",
-    "marketInfluence": "Markteinfluss"
+    "marketInfluence": "Markteinfluss",
+    "marginCallWarning": "Achtung: Hohes Margin-Call-Risiko bei {percent}% Verlust!",
+    "requiresTier": "Stufe {tier}"
   },
   "employees": {
     "title": "Teamverwaltung",
@@ -514,7 +737,8 @@
     "commission": "Provision",
     "commissionIncome": "Provisionseinnahmen",
     "locked": "Gesperrt",
-    "requiresRating": "Erfordert Rating {rating}"
+    "requiresRating": "Erfordert Rating {rating}",
+    "tier": "Stufe {tier}"
   },
   "synergies": {
     "title": "Asset-Synergien",
@@ -561,5 +785,154 @@
     "effectEfficiency": "{value}% Effizienz",
     "effectAUM": "{value} AUM",
     "effectLeverage": "{value} Hebel"
+  },
+  "tiers": {
+    "media": {
+      "1": { "name": "Anfänger-Creator", "desc": "Du startest in deinem Zimmer mit Laptop und Träumen" },
+      "2": { "name": "Bekannter Creator", "desc": "Die Leute beginnen dich zu erkennen" },
+      "3": { "name": "Profi", "desc": "Zeit, Leute einzustellen und eine Agentur zu gründen" },
+      "4": { "name": "Influencer", "desc": "Du bist jemand in der Branche" },
+      "5": { "name": "Medien-Imperium", "desc": "Du bist ein Mogul" }
+    },
+    "industrial": {
+      "1": { "name": "Kleine Werkstatt", "desc": "Du startest in einer Garage mit Grundwerkzeugen" },
+      "2": { "name": "Kleine Fabrik", "desc": "Du ziehst in ein echtes Gebäude mit Mitarbeitern" },
+      "3": { "name": "Mittlere Fabrik", "desc": "Du hast eine bekannte Marke" },
+      "4": { "name": "Großer Konzern", "desc": "Du bist ein Spieler auf dem nationalen Markt" },
+      "5": { "name": "Industrie-Imperium", "desc": "Du bist ein internationaler Riese" }
+    },
+    "finance": {
+      "1": { "name": "Anfänger-Investor", "desc": "Du startest mit eigenen Ersparnissen" },
+      "2": { "name": "Einzelhändler", "desc": "Du beginnst aktiv zu handeln" },
+      "3": { "name": "Fondsmanager", "desc": "Du gründest deinen eigenen Investmentfonds" },
+      "4": { "name": "Finanzinstitut", "desc": "Du bist ein ernsthafter Spieler" },
+      "5": { "name": "Finanz-Imperium", "desc": "Du bist einer der mächtigsten Spieler" }
+    }
+  },
+  "buildings": {
+    "m1_blog": { "name": "Persönlicher Blog", "desc": "Schreibe Artikel in deiner Freizeit" },
+    "m1_social": { "name": "Social Media Konto", "desc": "Posts auf Instagram/TikTok" },
+    "m1_freelance": { "name": "Freelance Jobs", "desc": "Schreibe Texte für andere" },
+    "m2_youtube": { "name": "YouTube-Kanal", "desc": "Dein eigener Videokanal" },
+    "m2_podcast": { "name": "Podcast", "desc": "Wöchentliche Audio-Episoden" },
+    "m2_newsletter": { "name": "Newsletter", "desc": "Bezahltes E-Mail-Abo" },
+    "m2_merch": { "name": "Merch-Shop", "desc": "T-Shirts mit deinem Logo" },
+    "m3_editor": { "name": "Video-Editor", "desc": "Angestellter Video-Editor" },
+    "m3_writer": { "name": "Texter", "desc": "Jemand schreibt Content für dich" },
+    "m3_manager": { "name": "Social Media Manager", "desc": "Verwaltet alle deine Konten" },
+    "m3_studio": { "name": "Kleines Studio", "desc": "Dein eigener Aufnahmeraum" },
+    "m3_agency": { "name": "Mikro-Agentur", "desc": "Du vertrittst auch andere Creator" },
+    "m4_brand_deal": { "name": "Marken-Deal", "desc": "Exklusive Partnerschaft" },
+    "m4_production": { "name": "Produktionsstudio", "desc": "Du produzierst Content für andere" },
+    "m4_app": { "name": "Eigene App", "desc": "Deine Plattform für Fans" },
+    "m4_course": { "name": "Online-Kurs", "desc": "Wie man Influencer wird" },
+    "m4_talent": { "name": "Talent-Agentur", "desc": "Du managst aufstrebende Stars" },
+    "m5_network": { "name": "Kanal-Netzwerk", "desc": "Multi-Channel Network" },
+    "m5_streaming": { "name": "Streaming-Plattform", "desc": "Dein eigenes Netflix" },
+    "m5_record_label": { "name": "Plattenlabel", "desc": "Du unterschreibst Künstler" },
+    "m5_media_house": { "name": "Medienhaus", "desc": "Konglomerat" },
+    "i1_workshop": { "name": "Werkstatt", "desc": "Grundlegende Handarbeit" },
+    "i1_tools": { "name": "Werkzeugset", "desc": "Bessere Werkzeuge" },
+    "i1_storage": { "name": "Kleines Lager", "desc": "Fertige Produkte lagern" },
+    "i1_supplier": { "name": "Lokaler Lieferant", "desc": "Liefert Ressourcen" },
+    "i2_machine": { "name": "Produktionsmaschine", "desc": "Deine erste echte Maschine" },
+    "i2_workers": { "name": "Arbeiterteam", "desc": "5 Produktionsarbeiter" },
+    "i2_forklift": { "name": "Gabelstapler", "desc": "Schnellerer Transport" },
+    "i2_wholesale": { "name": "Großhandel", "desc": "Günstigere Ressourcen" },
+    "i2_quality": { "name": "Qualitätskontrolle", "desc": "+5% Effizienz" },
+    "i3_assembly": { "name": "Montagelinie", "desc": "Automatisierte Montage" },
+    "i3_robot": { "name": "Industrieroboter", "desc": "Kein Gehalt nötig" },
+    "i3_warehouse": { "name": "Großes Lager", "desc": "Ressourcenpuffer" },
+    "i3_import": { "name": "Importkanal", "desc": "Günstige Ressourcen" },
+    "i3_maintenance": { "name": "Wartungsabteilung", "desc": "Automatische Wartung" },
+    "i3_training": { "name": "Schulungszentrum", "desc": "+10% Effizienz" },
+    "i4_plant": { "name": "Produktionswerk", "desc": "Ganzer Fabrikkomplex" },
+    "i4_rnd": { "name": "F&E-Abteilung", "desc": "+15% Effizienz" },
+    "i4_logistics": { "name": "Logistikzentrum", "desc": "Lieferoptimierung" },
+    "i4_mine": { "name": "Eigene Mine", "desc": "Ressourcenunabhängigkeit" },
+    "i4_green": { "name": "Grüne Energie", "desc": "-50% Energiekosten" },
+    "i4_contract": { "name": "Vertragsabteilung", "desc": "Bessere Vertragsbedingungen" },
+    "i5_megafactory": { "name": "Mega-Fabrik", "desc": "Größtes Werk im Land" },
+    "i5_global": { "name": "Globales Netzwerk", "desc": "Fabriken weltweit" },
+    "i5_automation": { "name": "Vollautomatisierung", "desc": "Fabrik ohne Menschen" },
+    "i5_monopoly": { "name": "Ressourcenmonopol", "desc": "Du kontrollierst den Markt" },
+    "i5_conglomerate": { "name": "Konglomerat", "desc": "Alles in einem" },
+    "f1_savings": { "name": "Sparkonto", "desc": "Sicher aber niedrige Rendite" },
+    "f1_bonds": { "name": "Staatsanleihen", "desc": "Stabiles Einkommen" },
+    "f1_etf": { "name": "Index-ETF", "desc": "Markt verfolgen" },
+    "f1_course": { "name": "Investitionskurs", "desc": "+5% auf alle Gewinne" },
+    "f2_stocks": { "name": "Blue-Chip-Aktien", "desc": "Stabile Unternehmen" },
+    "f2_growth": { "name": "Wachstumsaktien", "desc": "Riskant aber profitabel" },
+    "f2_client": { "name": "Einzelkunde", "desc": "+5$/s AUM" },
+    "f2_terminal": { "name": "Trading-Terminal", "desc": "+10% Transaktionsgeschwindigkeit" },
+    "f2_analyst": { "name": "Marktanalyst", "desc": "Warnt vor Marktänderungen" },
+    "f3_fund": { "name": "Investmentfonds", "desc": "Diversifiziertes Portfolio" },
+    "f3_realestate": { "name": "Immobilien", "desc": "Stabile Mieteinnahmen" },
+    "f3_commodities": { "name": "Rohstoffe", "desc": "Gold, Öl, Metalle" },
+    "f3_corporate": { "name": "Firmenkunde", "desc": "+25$/s AUM" },
+    "f3_quant": { "name": "Algo-Trading-System", "desc": "Automatischer Handel" },
+    "f3_research": { "name": "Forschungsabteilung", "desc": "+15% Marktvorhersage" },
+    "f4_pe": { "name": "Private Equity", "desc": "Investitionen in Firmen" },
+    "f4_hedge": { "name": "Hedge Fund", "desc": "Fortgeschrittene Strategien" },
+    "f4_crypto": { "name": "Krypto-Portfolio", "desc": "Bitcoin, Ethereum" },
+    "f4_pension": { "name": "Pensionsfonds", "desc": "+100$/s AUM" },
+    "f4_ipo": { "name": "IPO-Zugang", "desc": "Früher Zugang zu neuen Firmen" },
+    "f4_bank": { "name": "Banklizenz", "desc": "Einlagen annehmen +50$/s AUM" },
+    "f5_sovereign": { "name": "Staatsfonds", "desc": "Staatsgelder verwalten" },
+    "f5_derivatives": { "name": "Derivate", "desc": "Optionen, Futures, Swaps" },
+    "f5_market_maker": { "name": "Market Maker", "desc": "Liquidität bereitstellen" },
+    "f5_acquisition": { "name": "Übernahmen", "desc": "Andere Fonds kaufen" },
+    "f5_central": { "name": "Zentralbank-Einfluss", "desc": "Zinssätze beeinflussen" }
+  },
+  "contracts": {
+    "sponsor_small": { "name": "Kleines Sponsoring", "desc": "Produkt in deinem Content erwähnen" },
+    "sponsor_medium": { "name": "Mittleres Sponsoring", "desc": "Dedizierter gesponserter Post" },
+    "sponsor_large": { "name": "Großer Sponsorvertrag", "desc": "Serie von gesponserten Posts" },
+    "longterm_starter": { "name": "Startervertrag", "desc": "Monatliche Partnerschaft" },
+    "longterm_pro": { "name": "Profi-Vertrag", "desc": "Vierteljährliche Partnerschaft" },
+    "longterm_exclusive": { "name": "Exklusivvertrag", "desc": "Jährliche exklusive Partnerschaft" },
+    "collab_small": { "name": "Kleine Zusammenarbeit", "desc": "Gemeinsamer Post" },
+    "collab_video": { "name": "Gemeinsames Video", "desc": "Aufnahme mit beliebtem Creator" },
+    "collab_series": { "name": "Zusammenarbeitsserie", "desc": "Serie von gemeinsamen Content" },
+    "production_local": { "name": "Lokale Bestellung", "desc": "Kleine Bestellung von lokalem Kunden" },
+    "production_regional": { "name": "Regionalvertrag", "desc": "Bestellung vom regionalen Händler" },
+    "production_national": { "name": "Nationalvertrag", "desc": "Große Bestellung für Einzelhandelskette" },
+    "production_government": { "name": "Regierungsvertrag", "desc": "Öffentlicher Auftrag" },
+    "production_international": { "name": "Internationaler Vertrag", "desc": "Export zu ausländischen Partnern" }
+  },
+  "offline": {
+    "title": "Willkommen zurück!",
+    "earned": "Während deiner Abwesenheit ({time}) hast du verdient:",
+    "button": "Super!",
+    "note": "(20% der normalen Produktion, max 8h)",
+    "hours": "h",
+    "minutes": "min",
+    "seconds": "sek"
+  },
+  "tierRequirements": {
+    "resources": "Ressourcen",
+    "efficiency": "Effizienz",
+    "aum": "Kapital (AUM)",
+    "diversification": "Diversifizierung",
+    "crashesSurvived": "Überlebte Crashs",
+    "contracts": "Verträge",
+    "longTermContracts": "Langzeitverträge",
+    "scandalsSurvived": "Überlebte Skandale"
+  },
+  "saveSwitcher": {
+    "save": "Speichern",
+    "switching": "Wechseln...",
+    "switchSave": "Spielstand wechseln",
+    "yourSaves": "Deine Spielstände",
+    "loading": "Wird geladen...",
+    "active": "aktiv",
+    "manageSaves": "Spielstände verwalten"
+  },
+  "eventNotification": {
+    "followers": "Follower",
+    "reputation": "Ruf",
+    "production": "Produktion",
+    "forDuration": "für {minutes} min",
+    "activeEffects": "Aktive Effekte"
   }
 }

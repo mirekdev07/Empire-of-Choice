@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCost, getCostForMultiple, calculateOfflineEarnings } from "@/lib/engine";
 import { getBuildingById, PathType, getTierDefinition, getTiersForPath } from "@/config/gamedata";
 import { calculatePrestigeReward, canPrestige } from "@/config/prestige";
-import { auth } from "@/auth";
+import { getUser } from "@/lib/getUser";
 import { ActiveContract } from "@/config/contracts";
 import { ACHIEVEMENTS, getUnclaimedAchievements, getAchievementsWithStatus, AchievementStats } from "@/config/achievements";
 
@@ -50,6 +50,8 @@ export type GameState = {
   // Offline earnings (0 if no earnings, >0 if earned while away)
   offlineEarnings: number;
   offlineSeconds: number;
+  // Ad bonus - extra contract slots for 30 minutes after watching ad
+  adBonusExpiresAt: Date | null;
 };
 
 export type SaveInfo = {
@@ -69,11 +71,11 @@ export type SaveInfo = {
  * Get all saves for the current user
  */
 export async function getUserSaves(): Promise<SaveInfo[]> {
-  const session = await auth();
-  if (!session?.user?.id) return [];
+  const authUser = await getUser();
+  if (!authUser?.id) return [];
 
   const saves = await prisma.gameSave.findMany({
-    where: { userId: session.user.id },
+    where: { userId: authUser.id },
     orderBy: { lastPlayedAt: "desc" },
   });
 
@@ -96,14 +98,14 @@ export async function createSave(
   path: PathType,
   name?: string
 ): Promise<{ success: boolean; error?: string; saveId?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const authUser = await getUser();
+  if (!authUser?.id) {
     return { success: false, error: "Nie jesteś zalogowany" };
   }
 
   // Check max saves (limit to 5)
   const existingSaves = await prisma.gameSave.count({
-    where: { userId: session.user.id },
+    where: { userId: authUser.id },
   });
 
   if (existingSaves >= 5) {
@@ -125,7 +127,7 @@ export async function createSave(
 
   const save = await prisma.gameSave.create({
     data: {
-      userId: session.user.id,
+      userId: authUser.id,
       name: saveName,
       chosenPath: path,
       money: startingMoney,
@@ -135,7 +137,7 @@ export async function createSave(
 
   // Set as current save
   await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     data: { currentSaveId: save.id },
   });
 
@@ -148,14 +150,14 @@ export async function createSave(
 export async function selectSave(
   saveId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const authUser = await getUser();
+  if (!authUser?.id) {
     return { success: false, error: "Nie jesteś zalogowany" };
   }
 
   // Verify the save belongs to this user
   const save = await prisma.gameSave.findFirst({
-    where: { id: saveId, userId: session.user.id },
+    where: { id: saveId, userId: authUser.id },
   });
 
   if (!save) {
@@ -164,7 +166,7 @@ export async function selectSave(
 
   await prisma.$transaction([
     prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: authUser.id },
       data: { currentSaveId: saveId },
     }),
     prisma.gameSave.update({
@@ -182,14 +184,14 @@ export async function selectSave(
 export async function deleteSave(
   saveId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const authUser = await getUser();
+  if (!authUser?.id) {
     return { success: false, error: "Nie jesteś zalogowany" };
   }
 
   // Verify the save belongs to this user
   const save = await prisma.gameSave.findFirst({
-    where: { id: saveId, userId: session.user.id },
+    where: { id: saveId, userId: authUser.id },
   });
 
   if (!save) {
@@ -198,7 +200,7 @@ export async function deleteSave(
 
   // If this was the current save, clear it
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
   });
 
   await prisma.$transaction([
@@ -208,7 +210,7 @@ export async function deleteSave(
     ...(user?.currentSaveId === saveId
       ? [
           prisma.user.update({
-            where: { id: session.user.id },
+            where: { id: authUser.id },
             data: { currentSaveId: null },
           }),
         ]
@@ -222,11 +224,11 @@ export async function deleteSave(
  * Get current save ID
  */
 export async function getCurrentSaveId(): Promise<string | null> {
-  const session = await auth();
-  if (!session?.user?.id) return null;
+  const authUser = await getUser();
+  if (!authUser?.id) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { currentSaveId: true },
   });
 
@@ -243,11 +245,11 @@ export async function getGameState(): Promise<GameState | null> {
   // Disable Next.js Data Cache - always fetch fresh data for offline earnings
   noStore();
 
-  const session = await auth();
-  if (!session?.user?.id) return null;
+  const authUser = await getUser();
+  if (!authUser?.id) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { currentSaveId: true },
   });
 
@@ -360,6 +362,8 @@ export async function getGameState(): Promise<GameState | null> {
     // Offline earnings info (for showing modal) - always return number, not undefined
     offlineEarnings: offlineEarningsAmount,
     offlineSeconds: offlineSecondsAmount,
+    // Ad bonus
+    adBonusExpiresAt: save.adBonusExpiresAt,
   };
 }
 
@@ -367,11 +371,11 @@ export async function getGameState(): Promise<GameState | null> {
  * Helper to get current save with validation
  */
 async function getCurrentSave() {
-  const session = await auth();
-  if (!session?.user?.id) return null;
+  const authUser = await getUser();
+  if (!authUser?.id) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { currentSaveId: true },
   });
 
@@ -527,13 +531,13 @@ export async function saveGame(
   // Production snapshot for offline earnings
   lastProductionPerSecond?: number
 ): Promise<{ success: boolean; error?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const authUser = await getUser();
+  if (!authUser?.id) {
     return { success: false, error: "Nie jesteś zalogowany" };
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { currentSaveId: true },
   });
 
@@ -584,13 +588,13 @@ export async function saveGame(
  * Update lastPlayedAt timestamp - called when tab becomes hidden or page closes
  */
 export async function markLastPlayed(): Promise<{ success: boolean }> {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const authUser = await getUser();
+  if (!authUser?.id) {
     return { success: false };
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { currentSaveId: true },
   });
 
@@ -1256,11 +1260,11 @@ export async function claimAllAchievements(): Promise<{
  * Check if user needs to set display name (new Google users)
  */
 export async function checkNeedsDisplayName(): Promise<boolean> {
-  const session = await auth();
-  if (!session?.user?.id) return false;
+  const authUser = await getUser();
+  if (!authUser?.id) return false;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { displayNameSet: true },
   });
 
@@ -1271,11 +1275,11 @@ export async function checkNeedsDisplayName(): Promise<boolean> {
  * Get current user's display name
  */
 export async function getCurrentDisplayName(): Promise<string | null> {
-  const session = await auth();
-  if (!session?.user?.id) return null;
+  const authUser = await getUser();
+  if (!authUser?.id) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     select: { name: true },
   });
 
@@ -1288,8 +1292,8 @@ export async function getCurrentDisplayName(): Promise<string | null> {
 export async function setDisplayName(
   name: string
 ): Promise<{ success: boolean; error?: string }> {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const authUser = await getUser();
+  if (!authUser?.id) {
     return { success: false, error: "Nie jestes zalogowany" };
   }
 
@@ -1316,7 +1320,7 @@ export async function setDisplayName(
 
   // Update user
   await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: authUser.id },
     data: {
       name: trimmedName,
       displayNameSet: true,
@@ -1324,4 +1328,68 @@ export async function setDisplayName(
   });
 
   return { success: true };
+}
+
+// ============ AD BONUS ============
+
+/**
+ * Activate ad bonus - gives +3 contract slots for 30 minutes
+ * Called after user watches a rewarded ad
+ */
+export async function activateAdBonus(): Promise<{
+  success: boolean;
+  error?: string;
+  expiresAt?: Date;
+}> {
+  const authUser = await getUser();
+  if (!authUser?.id) {
+    return { success: false, error: "Nie jestes zalogowany" };
+  }
+
+  const save = await getCurrentSave();
+  if (!save) {
+    return { success: false, error: "Brak aktywnego zapisu" };
+  }
+
+  // Check if bonus is already active
+  if (save.adBonusExpiresAt && save.adBonusExpiresAt > new Date()) {
+    return {
+      success: false,
+      error: "Bonus jest juz aktywny",
+      expiresAt: save.adBonusExpiresAt,
+    };
+  }
+
+  // Set bonus to expire in 30 minutes
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+  await prisma.gameSave.update({
+    where: { id: save.id },
+    data: { adBonusExpiresAt: expiresAt },
+  });
+
+  return { success: true, expiresAt };
+}
+
+/**
+ * Get ad bonus status
+ */
+export async function getAdBonusStatus(): Promise<{
+  active: boolean;
+  expiresAt: Date | null;
+  remainingSeconds: number;
+}> {
+  const save = await getCurrentSave();
+  if (!save || !save.adBonusExpiresAt) {
+    return { active: false, expiresAt: null, remainingSeconds: 0 };
+  }
+
+  const now = new Date();
+  const expiresAt = save.adBonusExpiresAt;
+  const active = expiresAt > now;
+  const remainingSeconds = active
+    ? Math.floor((expiresAt.getTime() - now.getTime()) / 1000)
+    : 0;
+
+  return { active, expiresAt, remainingSeconds };
 }

@@ -17,6 +17,7 @@ interface BuildingCardProps {
 
 export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProps) {
   const t = useTranslations("building");
+  const tBuildings = useTranslations("buildings");
   const money = useGameStore((state) => state.money);
   const buildings = useGameStore((state) => state.buildings);
   const moneyPerSecond = useGameStore((state) => state.moneyPerSecond);
@@ -79,9 +80,9 @@ export function BuildingCard({ building, pathColor, maxCount }: BuildingCardProp
           <div className="flex-1">
             <CardTitle className="text-lg text-white flex items-center gap-2">
               <span className="text-2xl">{building.icon}</span>
-              {building.name}
+              {tBuildings(`${building.id}.name`)}
             </CardTitle>
-            <p className="text-sm text-slate-400 mt-1">{building.description}</p>
+            <p className="text-sm text-slate-400 mt-1">{tBuildings(`${building.id}.desc`)}</p>
           </div>
           <div
             className="text-2xl font-bold px-3 py-1 rounded-lg ml-2"

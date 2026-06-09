@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const LANGUAGES: { code: Locale; name: string; flag: string }[] = [
-  { code: "pl", name: "Polski", flag: "🇵🇱" },
-  { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "pl", name: "Polski", flag: "PL" },
+  { code: "en", name: "English", flag: "EN" },
+  { code: "de", name: "Deutsch", flag: "DE" },
 ];
 
 export default function SetupProfilePage() {
@@ -116,7 +116,7 @@ export default function SetupProfilePage() {
                         : "border-slate-600 bg-slate-700/30 hover:border-slate-500"
                     }`}
                   >
-                    <span className="text-2xl">{lang.flag}</span>
+                    <span className="text-lg font-bold bg-slate-600 px-2 py-1 rounded">{lang.flag}</span>
                     <span className={`text-xs ${
                       selectedLanguage === lang.code ? "text-purple-400" : "text-slate-400"
                     }`}>

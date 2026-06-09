@@ -3,8 +3,10 @@
 import { useGameStore } from "@/store/useGameStore";
 import { useEffect, useState } from "react";
 import { formatMoney } from "@/lib/engine";
+import { useTranslations } from "next-intl";
 
 export function EventNotification({ pathColor }: { pathColor: string }) {
+  const t = useTranslations("eventNotification");
   const activeEvents = useGameStore((state) => state.activeEvents);
   const eventHistory = useGameStore((state) => state.eventHistory);
   const dismissEvent = useGameStore((state) => state.dismissEvent);
@@ -67,23 +69,23 @@ export function EventNotification({ pathColor }: { pathColor: string }) {
                 )}
                 {latestEvent.event.effects.followers && (
                   <p className={latestEvent.event.effects.followers > 0 ? "text-purple-400" : "text-red-400"}>
-                    {latestEvent.event.effects.followers > 0 ? "+" : ""}{latestEvent.event.effects.followers} followers
+                    {latestEvent.event.effects.followers > 0 ? "+" : ""}{latestEvent.event.effects.followers} {t("followers")}
                   </p>
                 )}
                 {latestEvent.event.effects.followersPercent && (
                   <p className={latestEvent.event.effects.followersPercent > 0 ? "text-purple-400" : "text-red-400"}>
-                    {latestEvent.event.effects.followersPercent > 0 ? "+" : ""}{latestEvent.event.effects.followersPercent}% followers
+                    {latestEvent.event.effects.followersPercent > 0 ? "+" : ""}{latestEvent.event.effects.followersPercent}% {t("followers")}
                   </p>
                 )}
                 {latestEvent.event.effects.reputation && (
                   <p className={latestEvent.event.effects.reputation > 0 ? "text-yellow-400" : "text-red-400"}>
-                    {latestEvent.event.effects.reputation > 0 ? "+" : ""}{latestEvent.event.effects.reputation} reputation
+                    {latestEvent.event.effects.reputation > 0 ? "+" : ""}{latestEvent.event.effects.reputation} {t("reputation")}
                   </p>
                 )}
                 {latestEvent.event.effects.productionMultiplier && (
                   <p className={latestEvent.event.effects.productionMultiplier > 1 ? "text-blue-400" : "text-red-400"}>
-                    x{latestEvent.event.effects.productionMultiplier} production
-                    {latestEvent.event.duration && ` for ${Math.round(latestEvent.event.duration / 60)} min`}
+                    x{latestEvent.event.effects.productionMultiplier} {t("production")}
+                    {latestEvent.event.duration && ` ${t("forDuration", { minutes: Math.round(latestEvent.event.duration / 60) })}`}
                   </p>
                 )}
               </div>
@@ -101,7 +103,7 @@ export function EventNotification({ pathColor }: { pathColor: string }) {
       {/* Active events bar */}
       {activeEvents.length > 0 && (
         <div className="bg-slate-800 rounded-lg p-3 border border-slate-700 mb-4">
-          <h3 className="text-sm font-semibold text-slate-400 mb-2">Active Effects</h3>
+          <h3 className="text-sm font-semibold text-slate-400 mb-2">{t("activeEffects")}</h3>
           <div className="flex flex-wrap gap-2">
             {activeEvents.map((ae) => {
               const timeLeft = ae.endTime ? Math.max(0, Math.ceil((ae.endTime - Date.now()) / 1000)) : 0;

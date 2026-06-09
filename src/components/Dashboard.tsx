@@ -38,16 +38,17 @@ function OfflineEarningsModal({
   seconds: number;
   onClose: () => void;
 }) {
+  const t = useTranslations("offline");
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
 
   let timeText = "";
   if (hours > 0) {
-    timeText = `${hours}h ${minutes}min`;
+    timeText = `${hours}${t("hours")} ${minutes}${t("minutes")}`;
   } else if (minutes > 0) {
-    timeText = `${minutes} min`;
+    timeText = `${minutes} ${t("minutes")}`;
   } else {
-    timeText = `${seconds} sec`;
+    timeText = `${seconds} ${t("seconds")}`;
   }
 
   return (
@@ -55,21 +56,21 @@ function OfflineEarningsModal({
       <div className="bg-slate-800 rounded-xl p-6 max-w-sm w-full border border-slate-600 shadow-2xl">
         <div className="text-center">
           <div className="text-5xl mb-4">💰</div>
-          <h2 className="text-xl font-bold text-white mb-2">Welcome back!</h2>
+          <h2 className="text-xl font-bold text-white mb-2">{t("title")}</h2>
           <p className="text-slate-400 mb-4">
-            While you were away ({timeText}) you earned:
+            {t("earned", { time: timeText })}
           </p>
           <p className="text-3xl font-bold text-green-400 mb-6">
             +${formatMoney(earnings)}
           </p>
           <p className="text-xs text-slate-500 mb-4">
-            (20% of normal production, max 8h)
+            {t("note")}
           </p>
           <button
             onClick={onClose}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
           >
-            Awesome!
+            {t("button")}
           </button>
         </div>
       </div>
@@ -80,6 +81,7 @@ function OfflineEarningsModal({
 export function Dashboard({ initialState }: DashboardProps) {
   const t = useTranslations("dashboard");
   const tReq = useTranslations("requirements");
+  const tTiers = useTranslations("tiers");
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [selectedTier, setSelectedTier] = useState(1);
   const [offlineEarnings, setOfflineEarnings] = useState<{ earnings: number; seconds: number } | null>(null);
@@ -192,7 +194,7 @@ export function Dashboard({ initialState }: DashboardProps) {
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
-          <p className="text-slate-400">Ladowanie gry...</p>
+          <p className="text-slate-400">{t("loading")}</p>
         </div>
       </div>
     );
@@ -329,7 +331,7 @@ export function Dashboard({ initialState }: DashboardProps) {
             }`}
           >
             <span className="text-lg">📊</span>
-            <span className="text-xs">Stats</span>
+            <span className="text-xs">{t("tabStats")}</span>
           </button>
           <button
             onClick={() => setMobileTab("buildings")}
@@ -338,7 +340,7 @@ export function Dashboard({ initialState }: DashboardProps) {
             }`}
           >
             <span className="text-lg">🏗️</span>
-            <span className="text-xs">Buildings</span>
+            <span className="text-xs">{t("tabBuildings")}</span>
           </button>
           <button
             onClick={() => setMobileTab("actions")}
@@ -347,7 +349,7 @@ export function Dashboard({ initialState }: DashboardProps) {
             }`}
           >
             <span className="text-lg">⚡</span>
-            <span className="text-xs">Actions</span>
+            <span className="text-xs">{t("tabActions")}</span>
           </button>
         </div>
       </div>
@@ -361,10 +363,10 @@ export function Dashboard({ initialState }: DashboardProps) {
           </div>
           <div className="flex items-center gap-2">
             {path === "MEDIA" && (
-              <span className="text-purple-400">{formatMoney(followers)} foll.</span>
+              <span className="text-purple-400">{formatMoney(followers)} {t("followersShort")}</span>
             )}
             {path === "INDUSTRIAL" && (
-              <span className={resources < 10 ? "text-red-400" : "text-orange-400"}>{formatMoney(resources)} sur.</span>
+              <span className={resources < 10 ? "text-red-400" : "text-orange-400"}>{formatMoney(resources)} {t("resourcesShort")}</span>
             )}
             {path === "FINANCE" && (
               <span className="text-cyan-400">${formatMoney(aum)} AUM</span>
@@ -388,9 +390,9 @@ export function Dashboard({ initialState }: DashboardProps) {
                 >
                   TIER {currentTier}
                 </span>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">{tierDef?.name}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">{tTiers(`${path?.toLowerCase()}.${currentTier}.name`)}</h1>
               </div>
-              <p className="text-slate-400 text-sm">{tierDef?.description}</p>
+              <p className="text-slate-400 text-sm">{tTiers(`${path?.toLowerCase()}.${currentTier}.desc`)}</p>
             </div>
             {nextTier && (
               <Button
@@ -400,7 +402,7 @@ export function Dashboard({ initialState }: DashboardProps) {
                 style={{ backgroundColor: canUpgrade ? pathInfo.color : undefined }}
                 variant={canUpgrade ? "default" : "outline"}
               >
-                {canUpgrade ? `Upgrade to Tier ${nextTier.id}` : `🔒 Tier ${nextTier.id}`}
+                {canUpgrade ? t("upgradeTier", { tier: nextTier.id }) : `🔒 Tier ${nextTier.id}`}
               </Button>
             )}
           </div>
@@ -410,27 +412,43 @@ export function Dashboard({ initialState }: DashboardProps) {
             {/* Money - same for all paths */}
             <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
               <InfoTooltip
-                title="Money"
+                title={t("money")}
                 content={
                   <>
-                    <p>Your current cash.</p>
-                    <p className="mt-2 text-slate-400">What affects earnings:</p>
-                    <ul className="list-disc list-inside text-slate-400 mt-1">
-                      <li>Buildings - each generates $/s</li>
-                      {path === "MEDIA" && <li>Publishing - +10% for 30s</li>}
-                      {path === "MEDIA" && currentTier >= 2 && <li>Asset synergies</li>}
-                      {path === "MEDIA" && currentTier >= 3 && <li>Team morale (50-120%)</li>}
-                      {path === "MEDIA" && currentTier >= 3 && <li>Fixed costs (salaries -20%)</li>}
-                      {path === "MEDIA" && currentTier >= 4 && <li>Diversification (+5%/type)</li>}
-                      {path === "INDUSTRIAL" && <li>Efficiency (0-150%)</li>}
-                      {path === "INDUSTRIAL" && <li>Machine condition</li>}
-                      {path === "INDUSTRIAL" && <li>Resource availability</li>}
-                      <li>Events (positive/negative)</li>
+                    <p className="mb-2">{t("tooltip.money.desc")}</p>
+                    <p className="text-cyan-400 font-semibold mb-1">{t("tooltip.sources")}:</p>
+                    <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                      <li>{t("tooltip.money.buildings")}</li>
+                      <li>{t("tooltip.money.contracts")}</li>
+                      <li>{t("tooltip.money.events")}</li>
                     </ul>
+                    <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.multipliers")}:</p>
+                    {path === "MEDIA" && (
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.money.mediaPublish")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.money.mediaSynergy")}</span></li>
+                        <li>{t("tooltip.money.mediaMorale")}</li>
+                      </ul>
+                    )}
+                    {path === "INDUSTRIAL" && (
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li>{t("tooltip.money.industrialEff")}</li>
+                        <li>{t("tooltip.money.industrialMachine")}</li>
+                        <li><span className="text-red-400">{t("tooltip.money.industrialResources")}</span></li>
+                      </ul>
+                    )}
+                    {path === "FINANCE" && (
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.money.financeBull")}</span></li>
+                        <li>{t("tooltip.money.financeStable")}</li>
+                        <li><span className="text-orange-400">{t("tooltip.money.financeBear")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.money.financeCrash")}</span></li>
+                      </ul>
+                    )}
                   </>
                 }
               />
-              <p className="text-slate-400 text-xs uppercase mb-1">Money</p>
+              <p className="text-slate-400 text-xs uppercase mb-1">{t("money")}</p>
               <p className="text-xl md:text-2xl font-bold text-green-400">${formatMoney(money)}</p>
               <p className="text-xs text-slate-500">+${formatMoney(moneyPerSecond)}/s</p>
             </div>
@@ -439,79 +457,79 @@ export function Dashboard({ initialState }: DashboardProps) {
             {path === "MEDIA" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Followers"
+                  title={t("followers")}
                   content={
                     <>
-                      <p>Your followers/fans.</p>
-                      <p className="mt-2 text-slate-400">Follower sources:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Buildings - some give followers/s</li>
-                        <li>Viral post (+1000)</li>
-                        <li>Contracts (rewards)</li>
-                        <li>Events (positive/negative)</li>
+                      <p className="mb-2">{t("tooltip.followers.desc")}</p>
+                      <p className="text-cyan-400 font-semibold mb-1">{t("tooltip.sources")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li>{t("tooltip.followers.buildings")}</li>
+                        <li><span className="text-green-400">{t("tooltip.followers.viral")}</span></li>
+                        <li>{t("tooltip.followers.contracts")}</li>
+                        <li>{t("tooltip.followers.events")}</li>
                       </ul>
-                      <p className="mt-2 text-slate-400">What they are needed for:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Unlocking tiers</li>
-                        <li>Better sponsorship offers</li>
-                        <li>Some contracts</li>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.usedFor")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li>{t("tooltip.followers.tiers")}</li>
+                        <li>{t("tooltip.followers.sponsors")}</li>
+                        <li>{t("tooltip.followers.someContracts")}</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Followers</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("followers")}</p>
                 <p className="text-xl md:text-2xl font-bold text-purple-400">{formatMoney(followers)}</p>
                 <p className="text-xs text-slate-500">+{followersPerSecond.toFixed(2)}/s</p>
               </div>
             ) : path === "FINANCE" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="AUM (Assets Under Management)"
+                  title={t("aum")}
                   content={
                     <>
-                      <p>Capital under management - client money.</p>
-                      <p className="mt-2 text-slate-400">AUM sources:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Individual clients (+$500/client)</li>
-                        <li>Corporate clients (+$5,000/company)</li>
-                        <li>Pension funds (+$50,000/fund)</li>
-                        <li>Sovereign wealth (+$500,000/contract)</li>
+                      <p className="mb-2">{t("tooltip.aum.desc")}</p>
+                      <p className="text-cyan-400 font-semibold mb-1">{t("tooltip.sources")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.aum.individual")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.aum.corporate")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.aum.pension")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.aum.sovereign")}</span></li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Impact:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Higher AUM = higher commission</li>
-                        <li>Client AUM loss = rating drop</li>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.effects")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li>{t("tooltip.aum.commission")}</li>
+                        <li><span className="text-red-400">{t("tooltip.aum.loss")}</span></li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">AUM</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("aum")}</p>
                 <p className="text-xl md:text-2xl font-bold text-cyan-400">${formatMoney(aum)}</p>
                 <p className="text-xs text-slate-500">+${aumPerSecond.toFixed(2)}/s</p>
               </div>
             ) : (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Resources"
+                  title={t("resources")}
                   content={
                     <>
-                      <p>Resources needed for production.</p>
-                      <p className="mt-2 text-slate-400">Resource sources:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Local suppliers (+0.5/s)</li>
-                        <li>Wholesalers (+2.0/s)</li>
-                        <li>Import (+5.0/s)</li>
-                        <li>Own mine (+20/s)</li>
+                      <p className="mb-2">{t("tooltip.resources.desc")}</p>
+                      <p className="text-cyan-400 font-semibold mb-1">{t("tooltip.sources")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.resources.local")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.resources.wholesale")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.resources.import")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.resources.mine")}</span></li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Consumption:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Production buildings use resources</li>
-                        <li>No resources = production drop</li>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.effects")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li>{t("tooltip.resources.consumption")}</li>
+                        <li><span className="text-red-400">{t("tooltip.resources.noResources")}</span></li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Resources</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("resources")}</p>
                 <p className={`text-xl md:text-2xl font-bold ${resources < 10 ? "text-red-400" : "text-orange-400"}`}>
                   {formatMoney(resources)}
                 </p>
@@ -525,60 +543,59 @@ export function Dashboard({ initialState }: DashboardProps) {
             {path === "MEDIA" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Reputation"
+                  title={t("reputation")}
                   content={
                     <>
-                      <p>Your industry reputation (0-100).</p>
-                      <p className="mt-2 text-green-400">What increases it:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Publishing (+1, 1 min cooldown)</li>
-                        <li>Follower milestones (+10)</li>
-                        <li>Completed contracts (+2 to +25)</li>
-                        <li>Positive events</li>
+                      <p className="mb-2">{t("tooltip.reputation.desc")}</p>
+                      <p className="text-green-400 font-semibold mb-1">{t("tooltip.increases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.reputation.publish")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.reputation.milestones")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.reputation.contracts")}</span></li>
+                        <li>{t("tooltip.reputation.positiveEvents")}</li>
                       </ul>
-                      <p className="mt-2 text-red-400">What decreases it:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Inactivity (-2)</li>
-                        <li>Scandals (-15 to -30)</li>
-                        <li>Negative events</li>
+                      <p className="text-red-400 font-semibold mb-1">{t("tooltip.decreases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li><span className="text-red-400">{t("tooltip.reputation.inactivity")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.reputation.scandals")}</span></li>
+                        <li>{t("tooltip.reputation.negativeEvents")}</li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Reputation</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("reputation")}</p>
                 <p className="text-xl md:text-2xl font-bold text-yellow-400">{reputation}/100</p>
               </div>
             ) : path === "FINANCE" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Credit Rating"
+                  title={t("creditRating")}
                   content={
                     <>
-                      <p>Your financial credibility (D to AAA).</p>
-                      <p className="mt-2 text-green-400">What increases it:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Stable profits (+1/5 min)</li>
-                        <li>Portfolio diversification (+1)</li>
-                        <li>Low leverage (+1)</li>
-                        <li>Completed contracts (+1)</li>
+                      <p className="mb-2">{t("tooltip.creditRating.desc")}</p>
+                      <p className="text-green-400 font-semibold mb-1">{t("tooltip.increases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.creditRating.stableProfit")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.creditRating.diversification")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.creditRating.lowLeverage")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.creditRating.contracts")}</span></li>
                       </ul>
-                      <p className="mt-2 text-red-400">What decreases it:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Losses (-1 per -10% capital)</li>
-                        <li>High leverage (-1)</li>
-                        <li>Uncompleted contracts (-2)</li>
-                        <li>Financial crisis (-1-3)</li>
+                      <p className="text-red-400 font-semibold mb-1">{t("tooltip.decreases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-red-400">{t("tooltip.creditRating.losses")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.creditRating.highLeverage")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.creditRating.failedContracts")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.creditRating.crisis")}</span></li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Rating impact:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>AAA: 150% clients, 2% loans</li>
-                        <li>BBB: 100% clients, 8% loans</li>
-                        <li>D: Bankruptcy</li>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.effects")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.creditRating.aaaBonus")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.creditRating.dPenalty")}</span></li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Rating</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("creditRating")}</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   ["AAA", "AA", "A"].includes(creditRating) ? "text-green-400" :
                   ["BBB", "BB"].includes(creditRating) ? "text-yellow-400" : "text-red-400"
@@ -589,27 +606,27 @@ export function Dashboard({ initialState }: DashboardProps) {
             ) : (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Efficiency"
+                  title={t("efficiency")}
                   content={
                     <>
-                      <p>Production efficiency (0-150%).</p>
-                      <p className="mt-2 text-green-400">What increases it:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Modern machines (+5-20%)</li>
-                        <li>Trained workers (+10%)</li>
-                        <li>Automation (+15-30%)</li>
-                        <li>Quality certificates (+5%)</li>
+                      <p className="mb-2">{t("tooltip.efficiency.desc")}</p>
+                      <p className="text-green-400 font-semibold mb-1">{t("tooltip.increases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.efficiency.modernMachines")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.efficiency.trainedWorkers")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.efficiency.automation")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.efficiency.quality")}</span></li>
                       </ul>
-                      <p className="mt-2 text-red-400">What decreases it:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Old/worn machines (-10-30%)</li>
-                        <li>Breakdowns (-20% temporarily)</li>
-                        <li>Worker strikes (-50%)</li>
+                      <p className="text-red-400 font-semibold mb-1">{t("tooltip.decreases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li><span className="text-red-400">{t("tooltip.efficiency.oldMachines")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.efficiency.breakdowns")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.efficiency.strikes")}</span></li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Efficiency</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("efficiency")}</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   efficiency >= 100 ? "text-green-400" : efficiency >= 70 ? "text-yellow-400" : "text-red-400"
                 }`}>
@@ -622,45 +639,43 @@ export function Dashboard({ initialState }: DashboardProps) {
             {path === "MEDIA" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Total Earnings"
+                  title={t("totalEarnings")}
                   content={
                     <>
-                      <p>Sum of all money earned.</p>
-                      <p className="mt-2 text-slate-400">What it's needed for:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Unlocking next tiers</li>
-                        <li>Prestige requirement ($10M)</li>
-                        <li>Calculating prestige points</li>
+                      <p className="mb-2">{t("tooltip.totalEarnings.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.usedFor")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li>{t("tooltip.totalEarnings.tiers")}</li>
+                        <li><span className="text-cyan-400">{t("tooltip.totalEarnings.prestige")}</span></li>
+                        <li>{t("tooltip.totalEarnings.points")}</li>
                       </ul>
-                      <p className="mt-2 text-slate-500 text-xs">
-                        This value never decreases, even when you spend money.
-                      </p>
+                      <p className="text-green-400 text-sm mt-2">{t("tooltip.totalEarnings.note")}</p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Total Earnings</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("totalEarnings")}</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">${formatMoney(totalEarnings)}</p>
               </div>
             ) : path === "FINANCE" ? (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Market Phase"
+                  title={t("market")}
                   content={
                     <>
-                      <p>Current market cycle affecting profits.</p>
-                      <p className="mt-2 text-slate-400">Phases:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li><span className="text-green-400">Bull:</span> +35% profits</li>
-                        <li><span className="text-slate-300">Stable:</span> normal profits</li>
-                        <li><span className="text-yellow-400">Correction:</span> -15% profits</li>
-                        <li><span className="text-orange-400">Bear:</span> -40% profits</li>
-                        <li><span className="text-red-400">Crash:</span> -70% profits</li>
+                      <p className="mb-2">{t("tooltip.market.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.phases")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.market.bull")}</span></li>
+                        <li>{t("tooltip.market.stable")}</li>
+                        <li><span className="text-yellow-400">{t("tooltip.market.correction")}</span></li>
+                        <li><span className="text-orange-400">{t("tooltip.market.bear")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.market.crash")}</span></li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Cycle changes every 2-5 minutes.</p>
+                      <p className="text-slate-400 text-sm">{t("tooltip.market.cycle")}</p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Market</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("market")}</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   marketPhase === "bull" ? "text-green-400" :
                   marketPhase === "stable" ? "text-slate-300" :
@@ -676,26 +691,26 @@ export function Dashboard({ initialState }: DashboardProps) {
             ) : (
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Machine Condition"
+                  title={t("machineCondition")}
                   content={
                     <>
-                      <p>Technical condition of machines (0-100%).</p>
-                      <p className="mt-2 text-slate-400">Production impact:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>100-80%: Full efficiency</li>
-                        <li>80-50%: -10% efficiency</li>
-                        <li>50-30%: -25% efficiency</li>
-                        <li>30-0%: -50% efficiency</li>
+                      <p className="mb-2">{t("tooltip.machineCondition.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.impact")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-green-400">{t("tooltip.machineCondition.full")}</span></li>
+                        <li><span className="text-yellow-400">{t("tooltip.machineCondition.reduced10")}</span></li>
+                        <li><span className="text-orange-400">{t("tooltip.machineCondition.reduced25")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.machineCondition.reduced50")}</span></li>
                       </ul>
-                      <p className="mt-2 text-slate-400">Maintenance:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Tier 1-2: Manual repair (+20%)</li>
-                        <li>Tier 3+: Automatic with Maintenance Dept</li>
+                      <p className="text-cyan-400 font-semibold mb-1">{t("tooltip.repair")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li>{t("tooltip.machineCondition.manualRepair")}</li>
+                        <li><span className="text-green-400">{t("tooltip.machineCondition.autoRepair")}</span></li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Machine Condition</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("machineCondition")}</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   machineCondition >= 80 ? "text-green-400" : machineCondition >= 50 ? "text-yellow-400" : "text-red-400"
                 }`}>
@@ -714,19 +729,21 @@ export function Dashboard({ initialState }: DashboardProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Total Earnings"
+                  title={t("totalEarnings")}
                   content={
                     <>
-                      <p>Sum of all money earned.</p>
-                      <p className="mt-2 text-slate-400">What it's needed for:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Unlocking next tiers</li>
-                        <li>Prestige requirement</li>
+                      <p className="mb-2">{t("tooltip.totalEarnings.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.usedFor")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li>{t("tooltip.totalEarnings.tiers")}</li>
+                        <li><span className="text-cyan-400">{t("tooltip.totalEarnings.prestige")}</span></li>
+                        <li>{t("tooltip.totalEarnings.points")}</li>
                       </ul>
+                      <p className="text-green-400 text-sm mt-2">{t("tooltip.totalEarnings.note")}</p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Total Earnings</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("totalEarnings")}</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">${formatMoney(totalEarnings)}</p>
               </div>
             </div>
@@ -737,40 +754,49 @@ export function Dashboard({ initialState }: DashboardProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Total Earnings"
+                  title={t("totalEarnings")}
                   content={
                     <>
-                      <p>Sum of all money earned.</p>
-                      <p className="mt-2 text-slate-400">What it's needed for:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Unlocking next tiers</li>
-                        <li>Prestige requirement ($10M)</li>
+                      <p className="mb-2">{t("tooltip.totalEarnings.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.usedFor")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li>{t("tooltip.totalEarnings.tiers")}</li>
+                        <li><span className="text-cyan-400">{t("tooltip.totalEarnings.prestige")}</span></li>
+                        <li>{t("tooltip.totalEarnings.points")}</li>
                       </ul>
+                      <p className="text-green-400 text-sm mt-2">{t("tooltip.totalEarnings.note")}</p>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Total Earnings</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("totalEarnings")}</p>
                 <p className="text-xl md:text-2xl font-bold text-blue-400">${formatMoney(totalEarnings)}</p>
               </div>
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Leverage"
+                  title={t("leverage")}
                   content={
                     <>
-                      <p>Multiplies profits and losses.</p>
-                      <p className="mt-2 text-slate-400">Levels:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>1x: no leverage, 0% cost</li>
-                        <li>2x: double, 0.5%/min</li>
-                        <li>5x: Tier 3+, 1.5%/min</li>
-                        <li>10x: Tier 4+, 3%/min</li>
-                        <li>20x: Tier 5, 5%/min</li>
+                      <p className="mb-2">{t("tooltip.leverage.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.levels")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li>{t("tooltip.leverage.level1")}</li>
+                        <li><span className="text-yellow-400">{t("tooltip.leverage.level2")}</span></li>
+                        <li><span className="text-yellow-400">{t("tooltip.leverage.level5")}</span></li>
+                        <li><span className="text-orange-400">{t("tooltip.leverage.level10")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.leverage.level20")}</span></li>
                       </ul>
-                      <p className="mt-2 text-red-400">Margin call risk increases with leverage!</p>
+                      <p className="text-red-400 font-semibold mb-1">{t("tooltip.marginCall")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li>{t("tooltip.leverage.margin1")}</li>
+                        <li><span className="text-yellow-400">{t("tooltip.leverage.margin2")}</span></li>
+                        <li><span className="text-orange-400">{t("tooltip.leverage.margin5")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.leverage.margin10")}</span></li>
+                        <li><span className="text-red-400">{t("tooltip.leverage.margin20")}</span></li>
+                      </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Leverage</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("leverage")}</p>
                 <p className={`text-xl md:text-2xl font-bold ${
                   leverage === 1 ? "text-slate-300" :
                   leverage <= 5 ? "text-yellow-400" : "text-red-400"
@@ -783,36 +809,36 @@ export function Dashboard({ initialState }: DashboardProps) {
                   title="Hedging"
                   content={
                     <>
-                      <p>Protection against market volatility.</p>
-                      <p className="mt-2 text-slate-400">Effect:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Reduces profits in bull market (30%)</li>
-                        <li>Reduces losses in bear market (20%)</li>
+                      <p className="mb-2">{t("tooltip.hedging.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.effects")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 mb-2 space-y-0.5">
+                        <li><span className="text-orange-400">{t("tooltip.hedging.reduceBull")}</span></li>
+                        <li><span className="text-green-400">{t("tooltip.hedging.reduceBear")}</span></li>
                       </ul>
-                      <p className="mt-2 text-slate-500 text-xs">Available from Tier 3.</p>
+                      <p className="text-cyan-400 text-sm">{t("tooltip.hedging.available")}</p>
                     </>
                   }
                 />
                 <p className="text-slate-400 text-xs uppercase mb-1">Hedging</p>
                 <p className={`text-xl md:text-2xl font-bold ${hedgingEnabled ? "text-green-400" : "text-slate-500"}`}>
-                  {hedgingEnabled ? "ACTIVE" : "OFF"}
+                  {hedgingEnabled ? t("hedgingActive") : t("hedgingOff")}
                 </p>
               </div>
               <div className="bg-slate-900 rounded-lg p-3 md:p-4 relative">
                 <InfoTooltip
-                  title="Crashes Survived"
+                  title={t("crashesSurvived")}
                   content={
                     <>
-                      <p>Number of market crashes survived.</p>
-                      <p className="mt-2 text-slate-400">Required for:</p>
-                      <ul className="list-disc list-inside text-slate-400 mt-1">
-                        <li>Tier 5: 2 crashes survived</li>
-                        <li>Prestige: 3 crashes survived</li>
+                      <p className="mb-2">{t("tooltip.crashesSurvived.desc")}</p>
+                      <p className="text-yellow-400 font-semibold mb-1">{t("tooltip.requirements")}:</p>
+                      <ul className="list-disc list-inside text-slate-300 space-y-0.5">
+                        <li><span className="text-cyan-400">{t("tooltip.crashesSurvived.tier5")}</span></li>
+                        <li><span className="text-purple-400">{t("tooltip.crashesSurvived.prestige")}</span></li>
                       </ul>
                     </>
                   }
                 />
-                <p className="text-slate-400 text-xs uppercase mb-1">Crashes Survived</p>
+                <p className="text-slate-400 text-xs uppercase mb-1">{t("crashesSurvived")}</p>
                 <p className="text-xl md:text-2xl font-bold text-purple-400">{crashesSurvived}</p>
               </div>
             </div>
@@ -824,12 +850,12 @@ export function Dashboard({ initialState }: DashboardProps) {
               <div className="bg-slate-900 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-white font-medium">Machine Maintenance</p>
+                    <p className="text-white font-medium">{t("machineMaintenance")}</p>
                     <p className="text-slate-400 text-sm">
-                      Condition: <span className={machineCondition >= 80 ? "text-green-400" : machineCondition >= 50 ? "text-yellow-400" : "text-red-400"}>
+                      {t("condition")}: <span className={machineCondition >= 80 ? "text-green-400" : machineCondition >= 50 ? "text-yellow-400" : "text-red-400"}>
                         {machineCondition.toFixed(0)}%
                       </span>
-                      {machineCondition < 80 && " - production reduced!"}
+                      {machineCondition < 80 && ` - ${t("productionReduced")}`}
                     </p>
                   </div>
                   <Button
@@ -839,7 +865,7 @@ export function Dashboard({ initialState }: DashboardProps) {
                     variant={machineCondition < 100 && money >= currentTier * 100 ? "default" : "outline"}
                     className={machineCondition >= 100 || money < currentTier * 100 ? "text-slate-400" : ""}
                   >
-                    Repair (+20%) - ${currentTier * 100}
+                    {t("repair")} - ${currentTier * 100}
                   </Button>
                 </div>
                 <Progress value={machineCondition} className="h-2 mt-3" />
@@ -859,7 +885,7 @@ export function Dashboard({ initialState }: DashboardProps) {
             <div className="bg-slate-900 rounded-lg p-4">
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm text-slate-400">
-                  Progress to <span className="text-white font-semibold">Tier {nextTier.id}: {nextTier.name}</span>
+                  {t("progressTo")} <span className="text-white font-semibold">Tier {nextTier.id}: {tTiers(`${path?.toLowerCase()}.${nextTier.id}.name`)}</span>
                 </p>
                 <p className="text-sm text-slate-500">{Math.round(tierProgress)}%</p>
               </div>
@@ -893,8 +919,8 @@ export function Dashboard({ initialState }: DashboardProps) {
                 <div className="mt-3 pt-3 border-t border-slate-700">
                   <p className="text-xs text-slate-500 mb-2">
                     {buildingRequirements.type === "any"
-                      ? "One of these buildings required:"
-                      : "All buildings required:"}
+                      ? t("buildingRequiredOne")
+                      : t("buildingRequiredAll")}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                     {buildingRequirements.requirements.map((req) => (
@@ -914,7 +940,7 @@ export function Dashboard({ initialState }: DashboardProps) {
                   </div>
                   {buildingRequirements.met && (
                     <p className="text-green-400 text-xs mt-1">
-                      {buildingRequirements.type === "any" ? "Requirement met!" : "All requirements met!"}
+                      {buildingRequirements.type === "any" ? t("requirementMet") : t("allRequirementsMet")}
                     </p>
                   )}
                 </div>
@@ -929,6 +955,19 @@ export function Dashboard({ initialState }: DashboardProps) {
         {/* ACTIONS TAB CONTENT - visible on mobile actions tab or always on desktop */}
         <div className={`${mobileTab !== "actions" ? "hidden md:block" : ""}`}>
         <div className="bg-slate-800 rounded-xl p-6 mb-6 border border-slate-700">
+
+          {/* No actions available message for Tier 1 (except Industrial which has contracts) */}
+          {((path === "MEDIA" && currentTier < 2) || (path === "FINANCE" && currentTier < 2)) && (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-300 mb-2">{t("noActions.title")}</h3>
+              <p className="text-sm text-slate-500 max-w-xs">{t("noActions.description")}</p>
+            </div>
+          )}
 
           {/* Synergy panel for Media path (Tier 2+) */}
           {path === "MEDIA" && currentTier >= 2 && (
@@ -1019,7 +1058,7 @@ export function Dashboard({ initialState }: DashboardProps) {
                   <span className="flex items-center gap-2">
                     {!isUnlocked && <span>🔒</span>}
                     <span>T{tier.id}</span>
-                    <span className="hidden sm:inline">- {tier.name}</span>
+                    <span className="hidden sm:inline">- {tTiers(`${path?.toLowerCase()}.${tier.id}.name`)}</span>
                     {isUnlocked && buildingCount > 0 && (
                       <span className="bg-white/20 px-1.5 py-0.5 rounded text-xs">
                         {buildingCount}
@@ -1053,10 +1092,10 @@ export function Dashboard({ initialState }: DashboardProps) {
           <div className="bg-slate-800/50 rounded-lg p-8 text-center border border-slate-700">
             <span className="text-4xl mb-4 block">🔒</span>
             <h3 className="text-xl font-semibold text-slate-400 mb-2">
-              Tier {selectedTier}: {getTierDefinition(selectedTier, path)?.name}
+              Tier {selectedTier}: {tTiers(`${path?.toLowerCase()}.${selectedTier}.name`)}
             </h3>
             <p className="text-slate-500">
-              Unlock Tier {selectedTier} to access these buildings
+              {t("unlockTierAccess", { tier: selectedTier })}
             </p>
           </div>
         )}

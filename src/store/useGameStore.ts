@@ -194,6 +194,9 @@ interface GameState {
   scandalsEndured: number;
   scandalsSurvived: number; // Survived without losing >50% followers
 
+  // Ad bonus - extra contract slots (from watching ads)
+  adBonusExpiresAt: number | null; // timestamp when bonus expires
+
   // Production rates (computed, before multipliers)
   baseMoneyPerSecond: number;
   baseFollowersPerSecond: number;
@@ -233,6 +236,11 @@ interface GameState {
   checkContracts: () => void;
   setAutoAcceptContracts: (enabled: boolean) => void;
   setAutoAcceptMinReward: (minReward: number) => void;
+
+  // Ad bonus actions
+  setAdBonusExpiresAt: (expiresAt: number | null) => void;
+  isAdBonusActive: () => boolean;
+  getMaxContracts: () => number;
 
   // Industrial-specific actions
   setResources: (resources: number) => void;
@@ -290,6 +298,8 @@ interface GameState {
     hedgingEnabled?: boolean;
     prestigeAumBonus?: number;
     prestigeRatingBonus?: number;
+    // Ad bonus
+    adBonusExpiresAt?: Date | null;
   }) => void;
 
   // Game tick - called every frame
@@ -385,6 +395,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Scandal tracking
   scandalsEndured: 0,
   scandalsSurvived: 0,
+
+  // Ad bonus
+  adBonusExpiresAt: null,
 
   // Production rates
   baseMoneyPerSecond: 0,
@@ -663,6 +676,28 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setAutoAcceptMinReward: (minReward: number) => {
     set({ autoAcceptMinReward: minReward });
+  },
+
+  // Ad bonus actions
+  setAdBonusExpiresAt: (expiresAt: number | null) => {
+    set({ adBonusExpiresAt: expiresAt });
+  },
+
+  isAdBonusActive: () => {
+    const { adBonusExpiresAt } = get();
+    if (!adBonusExpiresAt) return false;
+    return Date.now() < adBonusExpiresAt;
+  },
+
+  getMaxContracts: () => {
+    const { adBonusExpiresAt } = get();
+    const BASE_MAX_CONTRACTS = 3;
+    const AD_BONUS_CONTRACTS = 3;
+
+    if (adBonusExpiresAt && Date.now() < adBonusExpiresAt) {
+      return BASE_MAX_CONTRACTS + AD_BONUS_CONTRACTS;
+    }
+    return BASE_MAX_CONTRACTS;
   },
 
   // Industrial-specific actions
@@ -1169,6 +1204,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       hedgingEnabled: data.hedgingEnabled ?? false,
       prestigeAumBonus: data.prestigeAumBonus ?? 0,
       prestigeRatingBonus: data.prestigeRatingBonus ?? 0,
+      // Ad bonus - convert Date to timestamp
+      adBonusExpiresAt: data.adBonusExpiresAt ? new Date(data.adBonusExpiresAt).getTime() : null,
     });
     get().updateProductionRates();
   },
@@ -1555,10 +1592,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
     // Generate contract offers periodically (every 20 seconds if no pending offer)
     const { pendingContractOffer, lastContractCheck, activeContracts, autoAcceptContracts, autoAcceptMinReward, resources: currentRes, efficiency: currentEff } = get();
-    const MAX_ACTIVE_CONTRACTS = 3;
+    const maxContracts = get().getMaxContracts();
 
     // Only generate offers if we have less than max contracts and no pending offer
-    if (!pendingContractOffer && activeContracts.length < MAX_ACTIVE_CONTRACTS && now - lastContractCheck >= 20000) {
+    if (!pendingContractOffer && activeContracts.length < maxContracts && now - lastContractCheck >= 20000) {
       set({ lastContractCheck: now }); // Update timer regardless of outcome
       const { reputation: rep, followers: fol } = get();
 

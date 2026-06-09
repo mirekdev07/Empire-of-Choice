@@ -1,16 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { formatMoney } from "@/lib/engine";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { InfoTooltip } from "./InfoTooltip";
-import { saveGame } from "@/actions/gameActions";
+import { saveGame, activateAdBonus } from "@/actions/gameActions";
 import { Contract } from "@/config/contracts";
 import { useTranslations } from "next-intl";
+import { Capacitor } from "@capacitor/core";
 
-const MAX_ACTIVE_CONTRACTS = 3;
+const BASE_MAX_CONTRACTS = 3;
+const AD_BONUS_CONTRACTS = 3;
+
+// AdMob Rewarded Ad Unit ID
+const ADMOB_REWARDED_AD_ID = "ca-app-pub-3402973990721389/7824200727";
 
 interface ContractPanelProps {
   pathColor: string;
@@ -18,6 +23,7 @@ interface ContractPanelProps {
 
 export function ContractPanel({ pathColor }: ContractPanelProps) {
   const t = useTranslations("contract");
+  const tContracts = useTranslations("contracts");
   const activeContracts = useGameStore((state) => state.activeContracts);
   const pendingContractOffer = useGameStore((state) => state.pendingContractOffer);
   const acceptContract = useGameStore((state) => state.acceptContract);
@@ -30,16 +36,121 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
   const autoAcceptMinReward = useGameStore((state) => state.autoAcceptMinReward);
   const setAutoAcceptContracts = useGameStore((state) => state.setAutoAcceptContracts);
   const setAutoAcceptMinReward = useGameStore((state) => state.setAutoAcceptMinReward);
+  const adBonusExpiresAt = useGameStore((state) => state.adBonusExpiresAt);
+  const setAdBonusExpiresAt = useGameStore((state) => state.setAdBonusExpiresAt);
+  const getMaxContracts = useGameStore((state) => state.getMaxContracts);
 
   const [minRewardInput, setMinRewardInput] = useState(autoAcceptMinReward.toString());
+  const [isWatchingAd, setIsWatchingAd] = useState(false);
+  const [adBonusTimeLeft, setAdBonusTimeLeft] = useState(0);
 
   // Sync local input state with store value when it changes (e.g., after server load)
   useEffect(() => {
     setMinRewardInput(autoAcceptMinReward.toString());
   }, [autoAcceptMinReward]);
 
+  // Update ad bonus timer
+  useEffect(() => {
+    if (!adBonusExpiresAt) {
+      setAdBonusTimeLeft(0);
+      return;
+    }
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, adBonusExpiresAt - Date.now());
+      setAdBonusTimeLeft(Math.floor(remaining / 1000));
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [adBonusExpiresAt]);
+
   const now = Date.now();
-  const isAtMaxContracts = activeContracts.length >= MAX_ACTIVE_CONTRACTS;
+  const maxContracts = getMaxContracts();
+  const isAdBonusActive = adBonusExpiresAt && adBonusExpiresAt > now;
+  const isAtMaxContracts = activeContracts.length >= maxContracts;
+
+  // Format time remaining for ad bonus
+  const formatTimeRemaining = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  // Handle watching ad - uses AdMob on native, placeholder on web
+  const handleWatchAd = useCallback(async () => {
+    setIsWatchingAd(true);
+
+    try {
+      // Check if running in native app (Capacitor)
+      if (Capacitor.isNativePlatform()) {
+        // Dynamic import AdMob only on native platform
+        const { AdMob, RewardAdPluginEvents } = await import(
+          "@capacitor-community/admob"
+        );
+
+        // Initialize AdMob (only once)
+        await AdMob.initialize({
+          initializeForTesting: false,
+        });
+
+        // Set up reward listener
+        const rewardListener = await AdMob.addListener(
+          RewardAdPluginEvents.Rewarded,
+          async (reward: { type: string; amount: number }) => {
+            console.log("Ad reward received:", reward);
+            // User watched the full ad - activate bonus
+            const result = await activateAdBonus();
+            if (result.success && result.expiresAt) {
+              setAdBonusExpiresAt(new Date(result.expiresAt).getTime());
+            }
+          }
+        );
+
+        // Set up dismiss listener to clean up
+        const dismissListener = await AdMob.addListener(
+          RewardAdPluginEvents.Dismissed,
+          async () => {
+            console.log("Ad dismissed");
+            setIsWatchingAd(false);
+            await rewardListener.remove();
+            await dismissListener.remove();
+          }
+        );
+
+        // Set up failed listener
+        const failedListener = await AdMob.addListener(
+          RewardAdPluginEvents.FailedToLoad,
+          async (error: unknown) => {
+            console.error("Ad failed to load:", error);
+            setIsWatchingAd(false);
+            await rewardListener.remove();
+            await dismissListener.remove();
+            await failedListener.remove();
+          }
+        );
+
+        // Load and show the rewarded ad
+        await AdMob.prepareRewardVideoAd({
+          adId: ADMOB_REWARDED_AD_ID,
+        });
+
+        await AdMob.showRewardVideoAd();
+      } else {
+        // Web version - just activate bonus directly (for testing)
+        // In production web, you might want to show a message that ads are only available in the app
+        const result = await activateAdBonus();
+        if (result.success && result.expiresAt) {
+          setAdBonusExpiresAt(new Date(result.expiresAt).getTime());
+        }
+        setIsWatchingAd(false);
+      }
+    } catch (error) {
+      console.error("Error showing ad:", error);
+      setIsWatchingAd(false);
+    }
+  }, [setAdBonusExpiresAt]);
 
   // Accept contract and save immediately
   const handleAcceptContract = async (contract: Contract) => {
@@ -123,13 +234,49 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-white flex items-center gap-2">
           <span>{t("title")}</span>
-          <span className="text-xs text-slate-500">({activeContracts.length}/{MAX_ACTIVE_CONTRACTS})</span>
+          <span className={`text-xs ${isAdBonusActive ? "text-green-400" : "text-slate-500"}`}>
+            ({activeContracts.length}/{maxContracts})
+            {isAdBonusActive && " +3"}
+          </span>
         </h3>
         <div className="flex gap-3 text-xs text-slate-400">
           <span>{t("completed")}: {completedContractsCount}</span>
           <span>{t("longTermShort")}: {completedLongTermCount}</span>
           <span>{t("collaborations")}: {completedCollaborationsCount}</span>
         </div>
+      </div>
+
+      {/* Ad Bonus Section */}
+      <div className="bg-slate-800 rounded-lg p-3 mb-3">
+        {isAdBonusActive ? (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-green-400">🎬</span>
+              <span className="text-sm text-green-400">{t("adBonusActive")}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-400 font-bold">+3 {t("slots")}</span>
+              <span className="text-slate-400 text-sm">
+                {formatTimeRemaining(adBonusTimeLeft)}
+              </span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400">🎬</span>
+              <span className="text-sm text-slate-300">{t("watchAdForBonus")}</span>
+            </div>
+            <Button
+              onClick={handleWatchAd}
+              disabled={isWatchingAd}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              {isWatchingAd ? t("watching") : t("watchAd")}
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Auto-accept controls */}
@@ -186,7 +333,10 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
       {/* Max contracts reached */}
       {isAtMaxContracts && !pendingContractOffer && (
         <div className="text-center py-2 mb-3 bg-yellow-900/30 rounded-lg border border-yellow-600/50">
-          <p className="text-yellow-400 text-sm">{t("maxReached", { count: activeContracts.length, max: MAX_ACTIVE_CONTRACTS })}</p>
+          <p className="text-yellow-400 text-sm">{t("maxReached", { count: activeContracts.length, max: maxContracts })}</p>
+          {!isAdBonusActive && (
+            <p className="text-slate-400 text-xs mt-1">{t("watchAdForMore")}</p>
+          )}
         </div>
       )}
 
@@ -201,8 +351,8 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
               <span className={`text-xs font-semibold ${getContractTypeColor(pendingContractOffer.type)}`}>
                 {getContractTypeLabel(pendingContractOffer.type)}
               </span>
-              <h4 className="text-white font-semibold">{pendingContractOffer.name}</h4>
-              <p className="text-slate-400 text-sm">{pendingContractOffer.description}</p>
+              <h4 className="text-white font-semibold">{tContracts(`${pendingContractOffer.id}.name`)}</h4>
+              <p className="text-slate-400 text-sm">{tContracts(`${pendingContractOffer.id}.desc`)}</p>
             </div>
             <span className="text-xs text-slate-500">{t("newOffer")}</span>
           </div>
@@ -271,7 +421,7 @@ export function ContractPanel({ pathColor }: ContractPanelProps) {
                     <span className={`text-xs ${getContractTypeColor(ac.contract.type)}`}>
                       {getContractTypeLabel(ac.contract.type)}
                     </span>
-                    <h5 className="text-white text-sm font-medium">{ac.contract.name}</h5>
+                    <h5 className="text-white text-sm font-medium">{tContracts(`${ac.contract.id}.name`)}</h5>
                   </div>
                   <span className={`text-xs ${isNearEnd ? "text-yellow-400" : "text-slate-400"}`}>
                     {timeLeft}

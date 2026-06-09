@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
-import { auth } from "@/auth";
+import { getUser } from "@/lib/getUser";
 import { getGameState } from "@/actions/gameActions";
 import { Dashboard } from "@/components/Dashboard";
 import { Sidebar } from "@/components/Sidebar";
@@ -13,9 +13,9 @@ export default async function DashboardPage() {
   // Disable ALL caching for this page
   noStore();
 
-  const session = await auth();
+  const user = await getUser();
 
-  if (!session?.user?.id) {
+  if (!user?.id) {
     redirect("/");
   }
 

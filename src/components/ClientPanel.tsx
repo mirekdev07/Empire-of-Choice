@@ -181,7 +181,7 @@ export function ClientPanel({ pathColor }: ClientPanelProps) {
                 <span className="text-white font-medium">{client.name}</span>
                 {!client.isUnlocked && (
                   <span className="text-xs text-slate-500 bg-slate-700 px-1.5 py-0.5 rounded">
-                    Tier {client.tier}
+                    {t("tier", { tier: client.tier })}
                   </span>
                 )}
               </div>

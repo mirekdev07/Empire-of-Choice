@@ -1,39 +1,44 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { setLocale } from "@/actions/localeActions";
+import { useState } from "react";
 import { Locale } from "@/i18n/request";
 
 const LANGUAGES: { code: Locale; name: string; flag: string }[] = [
-  { code: "pl", name: "Polski", flag: "🇵🇱" },
-  { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "pl", name: "Polski", flag: "PL" },
+  { code: "en", name: "English", flag: "EN" },
+  { code: "de", name: "Deutsch", flag: "DE" },
 ];
 
 export function LanguageSwitcher({ currentLocale }: { currentLocale: Locale }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  const [isChanging, setIsChanging] = useState(false);
 
-  const currentLang = LANGUAGES.find((l) => l.code === currentLocale) || LANGUAGES[0];
+  const currentLang = LANGUAGES.find((l) => l.code === currentLocale) || LANGUAGES[1];
 
   const handleLocaleChange = (locale: Locale) => {
+    if (locale === currentLocale) {
+      setIsOpen(false);
+      return;
+    }
+
+    setIsChanging(true);
     setIsOpen(false);
-    startTransition(async () => {
-      await setLocale(locale);
-      router.refresh();
-    });
+
+    // Set cookie directly on client side
+    document.cookie = `locale=${locale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+
+    // Full page reload to apply new locale
+    window.location.reload();
   };
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        disabled={isPending}
+        disabled={isChanging}
         className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-sm text-slate-300 hover:text-white disabled:opacity-50"
       >
-        <span className="text-base">{currentLang.flag}</span>
+        <span className="text-xs font-bold bg-slate-700 px-1.5 py-0.5 rounded">{currentLang.flag}</span>
         <span className="hidden sm:inline">{currentLang.name}</span>
         <svg
           className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
@@ -56,13 +61,14 @@ export function LanguageSwitcher({ currentLocale }: { currentLocale: Locale }) {
               <button
                 key={lang.code}
                 onClick={() => handleLocaleChange(lang.code)}
+                disabled={isChanging}
                 className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
                   currentLocale === lang.code
                     ? "bg-slate-700 text-white"
                     : "text-slate-300 hover:bg-slate-700 hover:text-white"
-                }`}
+                } disabled:opacity-50`}
               >
-                <span>{lang.flag}</span>
+                <span className="text-xs font-bold bg-slate-600 px-1.5 py-0.5 rounded">{lang.flag}</span>
                 <span>{lang.name}</span>
                 {currentLocale === lang.code && (
                   <svg className="w-4 h-4 ml-auto text-green-400" fill="currentColor" viewBox="0 0 20 20">

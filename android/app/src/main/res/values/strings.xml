@@ -4,4 +4,8 @@
     <string name="title_activity_main">Empire of Choice</string>
     <string name="package_name">com.empireofchoice.game</string>
     <string name="custom_url_scheme">com.empireofchoice.game</string>
+
+    <!-- Google Play Games Services -->
+    <string name="app_id">60061500993</string>
+    <string name="game_web_client_id">60061500993-v4q8sdv7p6o5llnor55jh07a46hrhkgd.apps.googleusercontent.com</string>
 </resources>

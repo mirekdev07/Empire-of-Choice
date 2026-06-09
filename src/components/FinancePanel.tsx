@@ -139,7 +139,7 @@ export function FinancePanel({ pathColor }: FinancePanelProps) {
         </div>
         {leverage > 1 && (
           <p className="text-yellow-400 text-xs mt-2">
-            Uwaga: Wysokie ryzyko margin call przy {((1 / leverage) * 100).toFixed(0)}% straty!
+            {t("marginCallWarning", { percent: ((1 / leverage) * 100).toFixed(0) })}
           </p>
         )}
       </div>
@@ -150,7 +150,7 @@ export function FinancePanel({ pathColor }: FinancePanelProps) {
           <div>
             <p className="text-white font-medium">{t("hedging")}</p>
             <p className="text-slate-400 text-sm">
-              {currentTier >= 3 ? t("hedgingDesc") : "Tier 3"}
+              {currentTier >= 3 ? t("hedgingDesc") : t("requiresTier", { tier: 3 })}
             </p>
           </div>
           <Button

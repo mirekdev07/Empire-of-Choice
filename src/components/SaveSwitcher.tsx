@@ -6,8 +6,11 @@ import { getUserSaves, selectSave, saveGame, SaveInfo } from "@/actions/gameActi
 import { useGameStore } from "@/store/useGameStore";
 import { formatMoney } from "@/lib/engine";
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 
 export function SaveSwitcher() {
+  const t = useTranslations("saveSwitcher");
+  const tSaves = useTranslations("saves");
   const router = useRouter();
   const [saves, setSaves] = useState<SaveInfo[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -128,10 +131,10 @@ export function SaveSwitcher() {
         <span className="text-lg">{currentIcon}</span>
         <div className="text-left">
           <div className="text-sm font-medium text-white truncate max-w-[120px]">
-            {saveName || "Save"}
+            {saveName || t("save")}
           </div>
           <div className="text-xs text-slate-400">
-            {isSwitching ? "Switching..." : "Switch save"}
+            {isSwitching ? t("switching") : t("switchSave")}
           </div>
         </div>
         <svg
@@ -148,12 +151,12 @@ export function SaveSwitcher() {
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 w-72 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 overflow-hidden">
           <div className="p-2 border-b border-slate-700">
-            <p className="text-xs text-slate-400 uppercase tracking-wide px-2">Your saves</p>
+            <p className="text-xs text-slate-400 uppercase tracking-wide px-2">{t("yourSaves")}</p>
           </div>
 
           {isLoading ? (
             <div className="p-4 text-center text-slate-400">
-              Loading...
+              {t("loading")}
             </div>
           ) : (
             <div className="max-h-64 overflow-y-auto">
@@ -184,12 +187,12 @@ export function SaveSwitcher() {
                         </span>
                         {isCurrent && (
                           <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/20 text-green-400">
-                            aktywny
+                            {t("active")}
                           </span>
                         )}
                       </div>
                       <div className="text-xs text-slate-400">
-                        Tier {save.currentTier} • ${formatMoney(save.money)}
+                        {tSaves("tier")} {save.currentTier} • ${formatMoney(save.money)}
                       </div>
                     </div>
                   </button>
@@ -209,7 +212,7 @@ export function SaveSwitcher() {
               }}
             >
               <span className="mr-2">+</span>
-              Zarządzaj zapisami
+              {t("manageSaves")}
             </Button>
           </div>
         </div>

@@ -7,13 +7,27 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  name          String?
-  password      String?
-  createdAt     DateTime   @default(now())
-  currentSaveId String?
-  gameSaves     GameSave[]
+  id             String     @id @default(cuid())
+  email          String     @unique
+  name           String?
+  password       String?
+  image          String?
+  playGamesId    String?    @unique
+  createdAt      DateTime   @default(now())
+  currentSaveId  String?
+  displayNameSet Boolean    @default(false)
+  gameSaves      GameSave[]
+  sessions       Session[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model GameSave {
@@ -64,6 +78,8 @@ model GameSave {
   // Heartbeat - updated only during active gameplay, NOT on page close
   // Used for calculating offline earnings (lastPlayedAt is updated on every save)
   lastHeartbeat           DateTime   @default(now()) @db.Timestamptz
+  // Ad bonus - expires after 30 minutes, gives +3 contract slots
+  adBonusExpiresAt        DateTime?  @db.Timestamptz
   user                    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])

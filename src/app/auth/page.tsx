@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
@@ -18,36 +18,108 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isAutoLogging, setIsAutoLogging] = useState(false);
+  const autoLoginAttempted = useRef(false);
 
-  // Check if running on native platform (no Google Sign In on mobile)
+  // Check if running on native platform
   const isNative = Capacitor.isNativePlatform();
 
-  // Handle Google Sign In - uses Custom Tabs on native, standard signIn on web
+  // Auto sign-in with Play Games on mobile
+  useEffect(() => {
+    if (!isNative || autoLoginAttempted.current) return;
+    autoLoginAttempted.current = true;
+
+    const attemptAutoSignIn = async () => {
+      setIsAutoLogging(true);
+      try {
+        const PlayGames = (await import("@/plugins/PlayGamesPlugin")).default;
+
+        // Check if already authenticated
+        const authCheck = await PlayGames.isAuthenticated();
+        console.log("Auto sign-in check:", authCheck.isAuthenticated);
+
+        if (authCheck.isAuthenticated) {
+          // User is already logged into Play Games, get their info
+          const result = await PlayGames.signIn();
+          console.log("Auto sign-in result:", JSON.stringify(result));
+
+          // Send to backend
+          const response = await fetch("https://empire-of-choice.vercel.app/api/auth/play-games", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              serverAuthCode: result.serverAuthCode,
+              playerId: result.playerId,
+              displayName: result.displayName,
+            }),
+          });
+
+          const data = await response.json();
+          if (data.success) {
+            router.push("/saves");
+            router.refresh();
+            return;
+          }
+        }
+      } catch (err) {
+        console.log("Auto sign-in not available:", err);
+      } finally {
+        setIsAutoLogging(false);
+      }
+    };
+
+    attemptAutoSignIn();
+  }, [isNative, router]);
+
+  // Handle Google Play Games Sign In (mobile only)
+  const handlePlayGamesSignIn = useCallback(async () => {
+    setIsGoogleLoading(true);
+    setError(null);
+
+    try {
+      const PlayGames = (await import("@/plugins/PlayGamesPlugin")).default;
+
+      console.log("Calling PlayGames.signIn()...");
+      const result = await PlayGames.signIn();
+      console.log("PlayGames result:", JSON.stringify(result));
+
+      // Send to backend for verification/login
+      const response = await fetch("https://empire-of-choice.vercel.app/api/auth/play-games", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          serverAuthCode: result.serverAuthCode,
+          playerId: result.playerId,
+          displayName: result.displayName,
+        }),
+      });
+
+      console.log("API response status:", response.status);
+      const data = await response.json();
+      console.log("API response data:", JSON.stringify(data));
+
+      if (data.success) {
+        router.push("/saves");
+        router.refresh();
+      } else {
+        setError(data.error || "Failed to authenticate");
+      }
+    } catch (err: unknown) {
+      console.error("Play Games sign in error:", err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError("Error: " + errorMessage);
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }, [router]);
+
+  // Handle Google Sign In (web only)
   const handleGoogleSignIn = useCallback(async () => {
     setIsGoogleLoading(true);
     setError(null);
 
     try {
-      if (Capacitor.isNativePlatform()) {
-        // On native platform, open Google OAuth in Custom Tab (system browser)
-        const { Browser } = await import("@capacitor/browser");
-
-        // Construct the OAuth URL - this will redirect back to our app
-        const baseUrl = "https://empire-of-choice.vercel.app";
-        const callbackUrl = `${baseUrl}/saves`;
-        const authUrl = `${baseUrl}/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-
-        await Browser.open({
-          url: authUrl,
-          windowName: "_self",
-        });
-
-        // Browser will handle the rest - deep link will bring user back
-        setIsGoogleLoading(false);
-      } else {
-        // On web, use standard NextAuth signIn
-        await signIn("google", { callbackUrl: "/saves" });
-      }
+      await signIn("google", { callbackUrl: "/saves" });
     } catch (err) {
       console.error("Google sign in error:", err);
       setError("Failed to sign in with Google");
@@ -88,6 +160,23 @@ export default function AuthPage() {
       setIsLoading(false);
     }
   };
+
+  // Show loading screen during auto sign-in on mobile
+  if (isAutoLogging) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10 text-center">
+          <span className="text-5xl mb-6 block">👑</span>
+          <h1 className="text-2xl font-bold text-white mb-4">Empire of Choice</h1>
+          <div className="flex items-center justify-center gap-3 text-slate-400">
+            <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+            <span>Signing in with Google Play...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
@@ -200,50 +289,68 @@ export default function AuthPage() {
             </form>
 
             <div className="mt-6 text-center">
-              {/* Google Sign In - only show on web */}
-              {!isNative && (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-700"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-slate-800 text-slate-500">or</span>
-                    </div>
-                  </div>
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-slate-800 text-slate-500">or</span>
+                </div>
+              </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGoogleSignIn}
-                    disabled={isGoogleLoading}
-                    className="w-full mt-4 bg-white hover:bg-gray-100 text-gray-900 border-gray-300 py-3 disabled:opacity-50"
-                  >
-                    {isGoogleLoading ? (
-                      <div className="w-5 h-5 mr-2 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                        <path
-                          fill="#4285F4"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        />
-                        <path
-                          fill="#EA4335"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
-                      </svg>
-                    )}
-                    {isGoogleLoading ? "Opening..." : "Continue with Google"}
-                  </Button>
-                </>
+              {/* Google Play Games Sign In - mobile only */}
+              {isNative && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handlePlayGamesSignIn}
+                  disabled={isGoogleLoading}
+                  className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white border-green-700 py-3 disabled:opacity-50"
+                >
+                  {isGoogleLoading ? (
+                    <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z"/>
+                    </svg>
+                  )}
+                  {isGoogleLoading ? "Signing in..." : "Sign in with Google Play"}
+                </Button>
+              )}
+
+              {/* Google Sign In - web only */}
+              {!isNative && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGoogleSignIn}
+                  disabled={isGoogleLoading}
+                  className="w-full mt-4 bg-white hover:bg-gray-100 text-gray-900 border-gray-300 py-3 disabled:opacity-50"
+                >
+                  {isGoogleLoading ? (
+                    <div className="w-5 h-5 mr-2 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      />
+                    </svg>
+                  )}
+                  {isGoogleLoading ? "Opening..." : "Continue with Google"}
+                </Button>
               )}
 
               <button
